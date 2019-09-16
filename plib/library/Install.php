@@ -10,13 +10,18 @@ class Modules_Microweber_Install {
     protected $_overwrite = true;
     protected $_domainId;
     protected $_type = 'default';
-
+    protected $_databaseDriver = 'mysql';
+    
     public function setDomainId($id) {
         $this->_domainId = $id;
     }
 
     public function setType($type) {
         $this->_type = $type;
+    }
+    
+    public function setDatabaseDriver($driver) {
+    	$this->_databaseDriver = $driver;
     }
 
     public function run() {
@@ -36,29 +41,32 @@ class Modules_Microweber_Install {
         $dbUsername = $dbName;
         $dbPassword = $this->_getRandomPassword(12);
 
-        $manager = new Modules_Microweber_DatabaseManager();
-        $manager->setDomainId($domain->getId());
-
-        $newDb = $manager->createDatabase($dbName);
-
-        if (isset($newDb['database']['add-db']['result']['errtext'])) {
-            throw new \Exception($newDb['database']['add-db']['result']['errtext']);
-        }
-
-        if (isset($newDb['database']['add-db']['result']['id'])) {
-            $dbId = $newDb['database']['add-db']['result']['id'];
-        }
-
-        if (!$dbId) {
-            throw new \Exception('Can\'t create database.');
-        }
-
-        if ($dbId) {
-            $newUser = $manager->createUser($dbId, $dbUsername, $dbPassword);
-        }
-
-        if (isset($newUser['database']['add-db-user']['result']['errtext'])) {
-            throw new \Exception($newUser['database']['add-db-user']['result']['errtext']);
+        if ($this->_databaseDriver == 'mysql') {
+        	
+	        $dbManager = new Modules_Microweber_DatabaseManager();
+	        $dbManager->setDomainId($domain->getId());
+	
+	        $newDb = $dbManager->createDatabase($dbName);
+	
+	        if (isset($newDb['database']['add-db']['result']['errtext'])) {
+	            throw new \Exception($newDb['database']['add-db']['result']['errtext']);
+	        }
+	
+	        if (isset($newDb['database']['add-db']['result']['id'])) {
+	            $dbId = $newDb['database']['add-db']['result']['id'];
+	        }
+	
+	        if (!$dbId) {
+	            throw new \Exception('Can\'t create database.');
+	        }
+	
+	        if ($dbId) {
+	        	$newUser = $dbManager->createUser($dbId, $dbUsername, $dbPassword);
+	        }
+	
+	        if (isset($newUser['database']['add-db-user']['result']['errtext'])) {
+	            throw new \Exception($newUser['database']['add-db-user']['result']['errtext']);
+	        }
         }
 
         $domainDocumentRoot = $domain->getDocumentRoot();
@@ -98,9 +106,14 @@ class Modules_Microweber_Install {
         $adminPassword = '1';
         $adminUsername = '1';
         
-        $dbDriver = 'mysql';
-        $dbHost = '127.0.0.1';
-        $dbPort = '3306';
+        if ($this->_databaseDriver == 'mysql') {
+	        $dbHost = '127.0.0.1';
+	        $dbPort = '3306';
+        } else {
+        	$dbHost = 'localhost';
+        	$dbPort = '';
+        	$dbName = $domainDocumentRoot . '/storage/database1.sqlite';
+        }
         
         $installArguments = array();
         
@@ -112,7 +125,7 @@ class Modules_Microweber_Install {
         $installArguments[] = $dbName;
         $installArguments[] = $dbUsername;
         $installArguments[] = $dbPassword;
-        $installArguments[] = $dbDriver;
+        $installArguments[] = $this->_databaseDriver;
         $installArguments[] = '-p mw_';
         $installArguments[] = '-t dream';
         $installArguments[] = '-d 1';
@@ -122,11 +135,11 @@ class Modules_Microweber_Install {
 		
         $command = $domainDocumentRoot . '/artisan microweber:install ' . $installArguments;
         
-        pm_ApiCli::callSbin('run_php.sh', [$command]);  
+        $artisan = pm_ApiCli::callSbin('run_php.sh', [$command]);  
       	
         pm_ApiCli::callSbin('repar_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
         
-        return array('success'=>true, 'log'=> '');
+        return array('success'=>true, 'log'=> $artisan['stdout']);
         
     }
     

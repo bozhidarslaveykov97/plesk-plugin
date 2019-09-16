@@ -238,6 +238,13 @@ class IndexController extends pm_Controller_Action {
             'value' => pm_Settings::get('installation_type'),
             'required' => true,
         ]);
+        
+        $form->addElement('select', 'installation_database_driver', [
+        	'label' => 'Database Driver',
+        	'multiOptions' => ['mysql' => 'MySQL', 'sqlite' => 'SQL Lite'],
+        	'value' => pm_Settings::get('installation_database_driver'),
+        	'required' => true,
+        ]);
 
         $form->addControlButtons([
             'cancelLink' => pm_Context::getModulesListUrl(),
@@ -248,9 +255,11 @@ class IndexController extends pm_Controller_Action {
             $post = $this->getRequest()->getPost();
 			
             try {
+            	
             	$newInstallation = new Modules_Microweber_Install();
             	$newInstallation->setDomainId($post['installation_domain']);
             	$newInstallation->setType($post['installation_type']);
+            	$newInstallation->setDatabaseDriver($post['installation_database_driver']);
             	$newInstallation->run();
             	
             	$this->_status->addMessage('info', 'App is installed successfuly on selected domain.');
