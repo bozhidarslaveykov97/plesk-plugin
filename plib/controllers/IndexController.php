@@ -89,26 +89,22 @@ class IndexController extends pm_Controller_Action {
     	$form->addElement('text', 'wl_key', [
     		'label' => 'White Label Key',
     		'value' => pm_Settings::get('wl_key'),
-    		'placeholder'=> 'Place your microweber white label key.',
-    		'required' => true,
+    		'placeholder'=> 'Place your microweber white label key.'
     	]);
     	$form->addElement('text', 'wl_brand_name', [
     		'label' => 'Brand Name',
     		'value' => pm_Settings::get('wl_brand_name'),
-    		'placeholder'=> 'Enter the name of your company.',
-    		'required' => true,
+    		'placeholder'=> 'Enter the name of your company.'
     	]);
     	$form->addElement('text', 'wl_admin_login_url', [
     		'label' => 'Admin login - White Label URL?',
     		'value' => pm_Settings::get('wl_admin_login_url'),
-    		'placeholder'=> 'Enter website url of your company.',
-    		'required' => true,
+    		'placeholder'=> 'Enter website url of your company.'
     	]);
     	$form->addElement('text', 'wl_contact_page', [
     		'label' => 'Enable support links?',
     		'value' => pm_Settings::get('wl_contact_page'),
-    		'placeholder'=> 'Enter url of your contact page',
-    		'required' => true,
+    		'placeholder'=> 'Enter url of your contact page'
     	]);
     	$form->addElement('checkbox', 'wl_enable_support_links', 
     		array(
@@ -130,20 +126,17 @@ class IndexController extends pm_Controller_Action {
     	$form->addElement('text', 'wl_logo_admin_panel', [
     		'label' => 'Logo for Admin panel (size: 180x35px)',
     		'value' => pm_Settings::get('wl_logo_admin_panel'),
-    		'placeholder'=> '',
-    		'required' => true,
+    		'placeholder'=> ''
     	]);
     	$form->addElement('text', 'wl_logo_live_edit_toolbar', [
     		'label' => 'Logo for Live-Edit toolbar (size: 50x50px)',
     		'value' => pm_Settings::get('wl_logo_live_edit_toolbar'),
-    		'placeholder'=> '',
-    		'required' => true,
+    		'placeholder'=> ''
     	]);
     	$form->addElement('text', 'wl_logo_login_screen', [
     		'label' => 'Logo for Login screen (max width: 290px)',
     		'value' => pm_Settings::get('wl_logo_login_screen'),
-    		'placeholder'=> '',
-    		'required' => true,
+    		'placeholder'=> ''
     	]);
     	$form->addElement('checkbox', 'wl_disable_microweber_marketplace',
     		array(
@@ -163,6 +156,7 @@ class IndexController extends pm_Controller_Action {
     		pm_Settings::set('wl_contact_page', $form->getValue('wl_contact_page'));
     		pm_Settings::set('wl_enable_support_links', $form->getValue('wl_enable_support_links'));
     		pm_Settings::set('wl_powered_by', $form->getValue('wl_powered_by'));
+    		pm_Settings::set('wl_hide_powered_by_link', $form->getValue('wl_hide_powered_by_link'));
     		pm_Settings::set('wl_logo_admin_panel', $form->getValue('wl_logo_admin_panel'));
     		pm_Settings::set('wl_logo_live_edit_toolbar', $form->getValue('wl_logo_live_edit_toolbar'));
     		pm_Settings::set('wl_logo_login_screen', $form->getValue('wl_logo_login_screen'));
@@ -369,7 +363,7 @@ class IndexController extends pm_Controller_Action {
     
     private function _checkIsCorrect() 
     {
-    	if (empty(pm_Settings::get('download_latest_version_app_url'))) {
+    	if (empty(pm_Settings::get('shared_folder_app_name'))) {
     		$this->_status->addMessage('warning', 'First you must to fill your app settings.');
     		header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/settings');
     		exit;
