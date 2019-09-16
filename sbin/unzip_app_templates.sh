@@ -19,18 +19,15 @@ wget "$downloadUrl" -O "$zipDownloadedFile"
 echo 'Unzip file...'
 unzip "$zipDownloadedFile" -d templates > unziping.log
 
-
-exit
-
 if [ ! -d '/usr/share/'"$2" ]; then
-	echo 'Make dir /usr/share/'"$2"
-	mkdir '/usr/share/'"$2"
+	echo 'First download app.'
+	exit
 fi
 
-echo 'Move file to /usr/share/'"$2"
-rsync -a latest /usr/share/"$2"
-rm -rf latest
+echo 'Rsync files /usr/share/'"$2"'/latest'
+rsync -a templates/userfiles /usr/share/"$2"/latest
+rm -rf templates
 
-chmod 755 -R /usr/share/"$2"/latest
+chmod 755 -R /usr/share/"$2"/latest/userfiles
 
 echo "Done!"
