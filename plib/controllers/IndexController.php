@@ -38,6 +38,10 @@ class IndexController extends pm_Controller_Action {
                 'title' => 'Versions',
                 'action' => 'versions'
             ],
+        	[
+        		'title' => 'White Label',
+        		'action' => 'whitelabel'
+        	],
             [
                 'title' => 'Settings',
                 'action' => 'settings',
@@ -70,7 +74,105 @@ class IndexController extends pm_Controller_Action {
         }
         
         $this->view->updateLink = pm_Context::getBaseUrl() . 'index.php/index/update';
-
+        $this->view->updateTemplatesLink = pm_Context::getBaseUrl() . 'index.php/index/update_templates';
+    }
+    
+    public function whitelabelAction() {
+    	
+    	$this->_checkIsCorrect();
+    	
+    	$this->view->pageTitle = $this->_moduleName . ' - White Label';
+    	
+    	// WL - white label
+    	
+    	$form = new pm_Form_Simple();
+    	$form->addElement('text', 'wl_key', [
+    		'label' => 'White Label Key',
+    		'value' => pm_Settings::get('wl_key'),
+    		'placeholder'=> 'Place your microweber white label key.',
+    		'required' => true,
+    	]);
+    	$form->addElement('text', 'wl_brand_name', [
+    		'label' => 'Brand Name',
+    		'value' => pm_Settings::get('wl_brand_name'),
+    		'placeholder'=> 'Enter the name of your company.',
+    		'required' => true,
+    	]);
+    	$form->addElement('text', 'wl_admin_login_url', [
+    		'label' => 'Admin login - White Label URL?',
+    		'value' => pm_Settings::get('wl_admin_login_url'),
+    		'placeholder'=> 'Enter website url of your company.',
+    		'required' => true,
+    	]);
+    	$form->addElement('text', 'wl_contact_page', [
+    		'label' => 'Enable support links?',
+    		'value' => pm_Settings::get('wl_contact_page'),
+    		'placeholder'=> 'Enter url of your contact page',
+    		'required' => true,
+    	]);
+    	$form->addElement('checkbox', 'wl_enable_support_links', 
+    		array(
+    			'label' => 'Enable support links', 'value' => pm_Settings::get('wl_enable_support_links')
+    		)
+    	);
+    	$form->addElement('textarea', 'wl_powered_by', 
+    		array(
+    			'label' => 'Enter "Powered by" text', 
+    			'value' => pm_Settings::get('wl_powered_by'), 
+    			'rows' => 3
+    		)
+    	);
+    	$form->addElement('checkbox', 'wl_hide_powered_by_link', 
+    		array(
+    			'label' => 'Hide "Powered by" link', 'value' => pm_Settings::get('wl_hide_powered_by_link')
+    		)
+    	);
+    	$form->addElement('text', 'wl_logo_admin_panel', [
+    		'label' => 'Logo for Admin panel (size: 180x35px)',
+    		'value' => pm_Settings::get('wl_logo_admin_panel'),
+    		'placeholder'=> '',
+    		'required' => true,
+    	]);
+    	$form->addElement('text', 'wl_logo_live_edit_toolbar', [
+    		'label' => 'Logo for Live-Edit toolbar (size: 50x50px)',
+    		'value' => pm_Settings::get('wl_logo_live_edit_toolbar'),
+    		'placeholder'=> '',
+    		'required' => true,
+    	]);
+    	$form->addElement('text', 'wl_logo_login_screen', [
+    		'label' => 'Logo for Login screen (max width: 290px)',
+    		'value' => pm_Settings::get('wl_logo_login_screen'),
+    		'placeholder'=> '',
+    		'required' => true,
+    	]);
+    	$form->addElement('checkbox', 'wl_disable_microweber_marketplace',
+    		array(
+    			'label' => 'Disable Microweber Marketplace', 'value' => pm_Settings::get('wl_disable_microweber_marketplace')
+    		)
+    	);
+    	
+    	$form->addControlButtons([
+    		'cancelLink' => pm_Context::getModulesListUrl(),
+    	]);
+    	
+    	if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+    		
+    		pm_Settings::set('wl_key', $form->getValue('wl_key'));
+    		pm_Settings::set('wl_brand_name', $form->getValue('wl_brand_name'));
+    		pm_Settings::set('wl_admin_login_url', $form->getValue('wl_admin_login_url'));
+    		pm_Settings::set('wl_contact_page', $form->getValue('wl_contact_page'));
+    		pm_Settings::set('wl_enable_support_links', $form->getValue('wl_enable_support_links'));
+    		pm_Settings::set('wl_powered_by', $form->getValue('wl_powered_by'));
+    		pm_Settings::set('wl_logo_admin_panel', $form->getValue('wl_logo_admin_panel'));
+    		pm_Settings::set('wl_logo_live_edit_toolbar', $form->getValue('wl_logo_live_edit_toolbar'));
+    		pm_Settings::set('wl_logo_login_screen', $form->getValue('wl_logo_login_screen'));
+    		pm_Settings::set('wl_disable_microweber_marketplace', $form->getValue('wl_disable_microweber_marketplace'));
+    		
+    		$this->_status->addMessage('info', 'Settings was successfully saved.');
+    		$this->_helper->json(['redirect' => pm_Context::getBaseUrl() . 'index.php/index/whitelabel']);
+    	}
+    	
+    	$this->view->form = $form;
     }
 
     public function updateAction() {
@@ -87,8 +189,20 @@ class IndexController extends pm_Controller_Action {
     	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/versions');
     	exit;
     }
+    
+    public function updatetemplatesAction() {
+    	
+    	$templatesUrl = $this->_getTemplatesUrl();
+    	
+    	$downloadLog = pm_ApiCli::callSbin('unzip_app_templates.sh',[base64_encode($templatesUrl), $this->_getSharedFolderAppName()])['stdout'];
+    	
+    	$this->_status->addMessage('info', $downloadLog);
+    	
+    	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/versions');
+    	exit;
+    }
 
-    public function testAction() {
+   /*  public function testAction() {
     	
         $newInstallation = new Modules_Microweber_Install();
         $newInstallation->setDomainId(5);
@@ -96,7 +210,7 @@ class IndexController extends pm_Controller_Action {
         $newInstallation->run();
         
     }
-
+ */
     public function installAction() {
 
     	$this->_checkIsCorrect();
@@ -192,12 +306,25 @@ class IndexController extends pm_Controller_Action {
             'required' => true,
         ]);
         
+        $form->addElement('text', 'update_app_url', [
+        	'label' => 'Update App Url',
+        	'value' => pm_Settings::get('update_app_url'),
+        	'required' => true,
+        ]);
         
+        $form->addElement('text', 'whmcs_url', [
+        	'label' => 'WHMCS Url',
+        	'value' => pm_Settings::get('whmcs_url'),
+        	'required' => true,
+        ]);
+        
+        /*
         $form->addElement('text', 'download_latest_version_app_url', [
         	'label' => 'Download latest version app url',
         	'value' => pm_Settings::get('download_latest_version_app_url'),
         	'required' => true,
         ]);
+        */
         
         $form->addElement('text', 'shared_folder_app_name', [
         	'label' => 'Shared folder app name (Folder name for symlinks)',
@@ -218,7 +345,10 @@ class IndexController extends pm_Controller_Action {
             pm_Settings::set('installation_type', $form->getValue('installation_type'));
             pm_Settings::set('installation_database_driver', $form->getValue('installation_database_driver'));
             
-            pm_Settings::set('download_latest_version_app_url', $form->getValue('download_latest_version_app_url'));
+            pm_Settings::set('update_app_url', $form->getValue('update_app_url'));
+            pm_Settings::set('whmcs_url', $form->getValue('whmcs_url'));
+            
+            // pm_Settings::set('download_latest_version_app_url', $form->getValue('download_latest_version_app_url'));
             pm_Settings::set('shared_folder_app_name', $form->getValue('shared_folder_app_name'));
 
             $release = $this->_getRelease();
@@ -367,11 +497,22 @@ class IndexController extends pm_Controller_Action {
 
         return $list;
     }
+    
+    private function _getTemplatesUrl() {
+    	
+    	$templatesUrl = pm_Settings::get('update_app_url');
+    	$templatesUrl .= '?api_function=download&get_extra_content=1&name=templates';
+    	
+    	return $templatesUrl;
+    }
 
     private function _getRelease() {
 
+    	$releaseUrl = pm_Settings::get('update_app_url');
+    	$releaseUrl .= '?api_function=get_download_link&get_last_version=';
+    	
         $tuCurl = curl_init();
-        curl_setopt($tuCurl, CURLOPT_URL, pm_Settings::get('download_latest_version_app_url'));
+        curl_setopt($tuCurl, CURLOPT_URL, $releaseUrl);
         curl_setopt($tuCurl, CURLOPT_VERBOSE, 0);
         curl_setopt($tuCurl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($tuCurl, CURLOPT_SSL_VERIFYPEER, false);
