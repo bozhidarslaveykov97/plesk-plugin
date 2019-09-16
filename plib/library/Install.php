@@ -69,17 +69,31 @@ class Modules_Microweber_Install {
         // Clear domain files if exists
         pm_ApiCli::callSbin('clear_domain_folder.sh', [$domainDocumentRoot]);
        
-        // First we will make a directories
-        foreach ($this->_getDirsToMake() as $dir) {
-        	pm_ApiCli::callSbin('create_dir.sh', [$domainDocumentRoot . '/' . $dir]);  
+        
+        if ($this->_type == 'symlink') {
+        	
+        	// First we will make a directories
+        	foreach ($this->_getDirsToMake() as $dir) {
+        		pm_ApiCli::callSbin('create_dir.sh', [$domainDocumentRoot . '/' . $dir]);
+        	}
+        	
+        	foreach ($this->_getFilesForSymlinking() as $folder) {
+        		
+        		$scriptDirOrFile = $this->_appLatestVersionFolder . '/' . $folder;
+        		$domainDirOrFile = $domainDocumentRoot .'/'. $folder;
+        		
+        		$result = pm_ApiCli::callSbin('create_symlink.sh', [$scriptDirOrFile, $domainDirOrFile], pm_ApiCli::RESULT_FULL);
+        		
+        	}
+        	
+        	// And then we will copy files
+        	foreach ($this->_getFilesForCopy() as $file) {
+        		pm_ApiCli::callSbin('copy_file.sh', [$this->_appLatestVersionFolder . '/' . $file, $domainDocumentRoot . '/' . $file]);
+        	}
+        } else {
+        	pm_ApiCli::callSbin('rsync_two_dirs.sh', [$this->_appLatestVersionFolder . '/', $domainDocumentRoot]);
         }
         
-        // And then we will copy files
-        foreach ($this->_getFilesForCopy() as $file) {
-        	pm_ApiCli::callSbin('copy_file.sh', [$this->_appLatestVersionFolder . '/' . $file, $domainDocumentRoot . '/' . $file]);
-        }
-        
-
         $adminEmail = '1';
         $adminPassword = '1';
         $adminUsername = '1';
@@ -110,26 +124,7 @@ class Modules_Microweber_Install {
         
         pm_ApiCli::callSbin('run_php.sh', [$command]);  
       	
-        if ($this->_type == 'symlink') {
-	        
-	        // Create symlinks
-	        $symlinkFolders = array();
-	        $symlinkFolders[] = 'src';
-	        $symlinkFolders[] = 'vendor';
-	        $symlinkFolders[] = 'resources';
-	        
-	        foreach ($symlinkFolders as $folder) {
-	            
-	        	$scriptDirOrFile = $this->_appLatestVersionFolder . '/' . $folder;
-	            $domainDirOrFile = $domainDocumentRoot .'/'. $folder;
-				
-	            $result = pm_ApiCli::callSbin('create_symlink.sh', [$scriptDirOrFile, $domainDirOrFile], pm_ApiCli::RESULT_FULL);
-	            
-	        }
-	        
-        }
-        
-        pm_ApiCli::callSbin('repar_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL); 
+        pm_ApiCli::callSbin('repar_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
         
         return array('success'=>true, 'log'=> '');
         
@@ -153,10 +148,10 @@ class Modules_Microweber_Install {
     	$dirs[] = 'bootstrap/cache';
     	
     	// User files dirs
-    	//$dirs[] = 'userfiles';
-    	//$dirs[] = 'userfiles/media';
-    	//$dirs[] = 'userfiles/modules';
-    	//$dirs[] = 'userfiles/templates';
+    	$dirs[] = 'userfiles';
+    	$dirs[] = 'userfiles/media';
+    	$dirs[] = 'userfiles/modules';
+    	$dirs[] = 'userfiles/templates';
     	
     	// Config dir
     	$dirs[] = 'config';
@@ -164,6 +159,25 @@ class Modules_Microweber_Install {
     	return $dirs;
     }
     
+    private function _getFilesForSymlinking() {
+    	
+    	$files = array();
+    	
+    	$files[] = 'vendor';
+    	$files[] = 'src';
+    	$files[] = 'resources';
+    	$files[] = 'database';
+    	$files[] = 'userfiles/modules';
+    	$files[] = 'userfiles/templates';
+    	$files[] = 'userfiles/elements';
+    	
+    	return $files;
+    }
+    
+    /**
+     * This is the files when symlinking app.
+     * @return string[]
+     */
     private function _getFilesForCopy() {
     	
     	$files = array();
@@ -196,14 +210,6 @@ class Modules_Microweber_Install {
     	$files[] = 'bootstrap/.htaccess';
     	$files[] = 'bootstrap/app.php';
     	$files[] = 'bootstrap/autoload.php';
-    	
-    	// App folders
-    	$files[] = 'database';
-    	$files[] = 'resources';
-    	$files[] = 'src';
-    	$files[] = 'tests';
-    	$files[] = 'vendor';
-    	$files[] = 'userfiles';
     	
     	return $files;
     }
