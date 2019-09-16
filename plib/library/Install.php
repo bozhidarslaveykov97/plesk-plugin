@@ -11,6 +11,9 @@ class Modules_Microweber_Install {
     protected $_domainId;
     protected $_type = 'default';
     protected $_databaseDriver = 'mysql';
+    protected $_email = '';
+    protected $_username = '';
+    protected $_password = '';
     
     public function setDomainId($id) {
         $this->_domainId = $id;
@@ -22,6 +25,18 @@ class Modules_Microweber_Install {
     
     public function setDatabaseDriver($driver) {
     	$this->_databaseDriver = $driver;
+    }
+    
+    public function setEmail($email) {
+    	$this->_email = $email;
+    }
+    
+    public function setUsername($username) {
+    	$this->_username = $username;
+    }
+    
+    public function setPassword($password) {
+    	$this->_password = $password;
     }
 
     public function run() {
@@ -105,6 +120,16 @@ class Modules_Microweber_Install {
         $adminEmail = '1';
         $adminPassword = '1';
         $adminUsername = '1';
+        
+        if (!empty($this->_email)) {
+        	$adminEmail = $this->_email;
+        }
+        if (!empty($this->_password)) {
+        	$adminPassword = $this->_password;
+        }
+        if (!empty($this->_username)) {
+        	$adminUsername = $this->_username;
+        }
         
         if ($this->_databaseDriver == 'mysql') {
 	        $dbHost = '127.0.0.1';

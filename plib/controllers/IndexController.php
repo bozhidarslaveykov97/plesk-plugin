@@ -245,6 +245,16 @@ class IndexController extends pm_Controller_Action {
         	'value' => pm_Settings::get('installation_database_driver'),
         	'required' => true,
         ]);
+        
+        $form->addElement('text', 'installation_email', [
+        	'label' => 'Admin Email',
+        ]);
+        $form->addElement('text', 'installation_username', [
+        	'label' => 'Admin Username',
+        ]);
+        $form->addElement('password', 'installation_password', [
+        	'label' => 'Admin Password',
+        ]);
 
         $form->addControlButtons([
             'cancelLink' => pm_Context::getModulesListUrl(),
@@ -260,6 +270,19 @@ class IndexController extends pm_Controller_Action {
             	$newInstallation->setDomainId($post['installation_domain']);
             	$newInstallation->setType($post['installation_type']);
             	$newInstallation->setDatabaseDriver($post['installation_database_driver']);
+            	
+            	if (!empty($post['installation_email'])) {
+            		$newInstallation->setEmail($post['installation_email']);
+            	}
+            	
+            	if (!empty($post['installation_username'])) {
+            		$newInstallation->setUsername($post['installation_username']);
+            	}
+            	
+            	if (!empty($post['installation_password'])) {
+            		$newInstallation->setPassword($post['installation_password']);
+            	}
+            	
             	$newInstallation->run();
             	
             	$this->_status->addMessage('info', 'App is installed successfuly on selected domain.');
