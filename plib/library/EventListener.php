@@ -24,6 +24,7 @@ class Modules_Credocart_EventListener implements EventListener
 		    		$newInstallation = new Modules_Microweber_Install();
 		    		$newInstallation->setDomainId($objectId);
 		    		$newInstallation->setType(pm_Settings::get('installation_type'));
+		    		$newInstallation->setDatabaseDriver(pm_Settings::get('installation_database_driver'));
 		    		$newInstallation->run();
 		    		
 	    		} catch (pm_Exception $e) {

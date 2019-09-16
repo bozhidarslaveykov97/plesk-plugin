@@ -137,7 +137,8 @@ class Modules_Microweber_Install {
         
         $artisan = pm_ApiCli::callSbin('run_php.sh', [$command]);  
       	
-        pm_ApiCli::callSbin('repar_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
+        // Repair domain permission
+        pm_ApiCli::callSbin('repair_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
         
         return array('success'=>true, 'log'=> $artisan['stdout']);
         
