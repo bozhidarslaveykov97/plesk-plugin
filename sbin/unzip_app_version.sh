@@ -24,11 +24,9 @@ if [ ! -d '/usr/share/'"$2" ]; then
 	mkdir '/usr/share/'"$2"
 fi
 
-echo 'Delete files from /usr/share/'"$2"'/latest'
-rm -rf '/usr/share/'"$2"'/latest'
-
 echo 'Move file to /usr/share/'"$2"
-mv latest /usr/share/"$2"
+rsync -a latest /usr/share/"$2"
+rm -rf latest
 
 chmod 755 -R /usr/share/"$2"/latest
 
