@@ -1,4 +1,4 @@
-# plesk-auto-installer
+# plesk-microweber-plugin
 
 /opt/psa/admin/sbin/modules/microweber
 

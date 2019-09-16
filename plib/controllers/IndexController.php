@@ -125,7 +125,7 @@ class IndexController extends pm_Controller_Action {
             'multiOptions' =>
             [
                 'default' => 'Default',
-                'sym_linked' => 'Sym-Linked'
+                'symlink' => 'Sym-Linked'
             ],
             'value' => pm_Settings::get('installation_type'),
             'required' => true,
@@ -178,7 +178,7 @@ class IndexController extends pm_Controller_Action {
             'multiOptions' =>
             [
                 'default' => 'Default',
-                'sym_linked' => 'Sym-Linked (saves a big amount of disk space)'
+                'symlink' => 'Sym-Linked (saves a big amount of disk space)'
             ],
             'value' => pm_Settings::get('installation_type'),
             'required' => true,
@@ -305,13 +305,11 @@ class IndexController extends pm_Controller_Action {
             	$appVersion = $fileManager->fileGetContents($domain->getDocumentRoot() . '/version.txt');
             }
             
-            /*
-            if ($fileManager->fileExists($domain->getDocumentRoot() . '/symlinked.txt')) {
+            if (is_link($domain->getDocumentRoot() . '/vendor')) {
             	$installationType = 'Symlinked';
-            } else  if ($fileManager->fileExists($domain->getDocumentRoot() . '/standalone.txt')) {
+            } else {
             	$installationType = 'Standalone';
             }
-           	*/
             
             $data[$i] = [
                 'domain' => '<a href="#">' . $domainName . '</a>',

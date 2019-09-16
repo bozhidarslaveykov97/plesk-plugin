@@ -24,7 +24,6 @@ class Modules_Microweber_Install {
     	// $this->_domainId = 6;
     	
         $domain = pm_Domain::getByDomainId($this->_domainId);
-        $domainFileManager = new pm_FileManager($domain->getId());
         
         if (empty($domain->getName())) {
             throw new \Exception('Domain not found.');
@@ -128,10 +127,7 @@ class Modules_Microweber_Install {
 	            
 	        }
 	        
-	        $domainFileManager->filePutContents($domain->getDocumentRoot() . '/symlinked.txt', 'true');
         }
-        
-        $domainFileManager->filePutContents($domain->getDocumentRoot() . '/standalone.txt', 'true');
         
         pm_ApiCli::callSbin('repar_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL); 
         

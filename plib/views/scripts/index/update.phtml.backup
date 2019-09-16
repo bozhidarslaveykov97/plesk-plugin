@@ -1,0 +1,56 @@
+<?php
+// Copyright 1999-2017. Plesk International GmbH.
+?>
+<?php echo $this->renderTabs($this->tabs); ?>
+<style>
+#wesellin-current-version { 
+    color:green;
+}
+</style>
+<script type="text/javascript">
+//<![CDATA[
+Jsw.onReady(function() {
+    new Ajax.Request('/modules/wesellin/index.php/index/version', {
+    	method: 'GET',
+    	onSuccess: function (data) {
+    		 document.getElementById("wesellin-current-version").innerHTML = data.responseText;
+    	},
+    	onFailure: function () {
+                       
+    	}
+    });
+});
+
+function downloadNewVersion() { 
+
+    document.getElementById("wesellin-update-log").innerHTML = 'Downloading...';  
+
+    new Ajax.Request('/modules/wesellin/index.php/index/download', {
+    	method: 'GET',
+    	onSuccess: function (data) {
+            document.getElementById("wesellin-update-log").innerHTML = data.responseText;
+    	},
+    	onFailure: function () {  
+            document.getElementById("wesellin-update-log").innerHTML = 'Failure';         
+        }
+    });
+}
+//]]>
+</script>
+
+<h4>Update the WeSellIn</h4>
+<b>Get the last version from git.</b>
+
+<br />
+<br />
+Version of WeSellIn: <b><span id="wesellin-current-version">Loading...</span></b>
+<br />
+<br />
+<div id="wesellin-update-log"></div>
+
+<br />
+<br />
+
+<span id="btn-send" class="btn action">
+	<button type="button" onClick="downloadNewVersion();">PULL FROM MASTER</button>
+</span>
