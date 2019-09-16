@@ -10,7 +10,7 @@ class Modules_Microweber_CustomButtons extends pm_Hook_CustomButtons
 				'place' => self::PLACE_DOMAIN,
 				'title' => 'Microweber toolkit',
 				'description' => 'Install last version of microweber',
-				'icon' => pm_Context::getBaseUrl() . 'images/icon.png',
+				'icon' => pm_Context::getBaseUrl() . 'images/logo_small.svg',
 				'link' => pm_Context::getBaseUrl() . 'index.php/index/install'
 			],
 			[
@@ -20,7 +20,7 @@ class Modules_Microweber_CustomButtons extends pm_Hook_CustomButtons
 				'title' => 'Microweber',
 				'description' => 'Install last version of microweber',
 				'link' => pm_Context::getActionUrl('index', ''),
-				'icon' => pm_Context::getBaseUrl() . 'images/icon.png'
+				'icon' => pm_Context::getBaseUrl() . 'images/logo_small.svg'
 			],
 			[
 				'place' => self::PLACE_DOMAIN_PROPERTIES,
@@ -28,7 +28,7 @@ class Modules_Microweber_CustomButtons extends pm_Hook_CustomButtons
 				'title' => 'Microweber',
 				'description' => 'Install last version of microweber',
 				'link' => pm_Context::getActionUrl('index', 'install'),
-				'icon' => pm_Context::getBaseUrl() . 'images/icon.png'
+				'icon' => pm_Context::getBaseUrl() . 'images/logo_small.svg' 
 			],
 		];
 	}
