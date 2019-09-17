@@ -5,7 +5,7 @@
 * Plesk auto app installer
 */
 
-class Modules_Credocart_EventListener implements EventListener
+class Modules_Microweber_EventListener implements EventListener
 {
     public function handleEvent($objectType, $objectId, $action, $oldValue, $newValue)
     {
