@@ -102,6 +102,8 @@ class IndexController extends pm_Controller_Action {
     	
     	$this->view->pageTitle = $this->_moduleName . ' - White Label';
     	
+    	$this->view->updatePremiumTemplatesLink = pm_Context::getBaseUrl() . 'index.php/index/update_premium_templates';
+    	
     	// WL - white label
     	
     	$form = new pm_Form_Simple();
@@ -224,16 +226,21 @@ class IndexController extends pm_Controller_Action {
     	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/versions');
     	exit;
     }
-
-   /*  public function testAction() {
+    
+    public function updatepremiumtemplatesAction() {
     	
-        $newInstallation = new Modules_Microweber_Install();
-        $newInstallation->setDomainId(5);
-        $newInstallation->setType('default');
-        $newInstallation->run();
-        
+    	$templatesUrl = $this->_getPremiumTemplatesUrl();
+    	
+    	if ($templatesUrl) {
+	    	$downloadLog = pm_ApiCli::callSbin('unzip_app_templates.sh',[base64_encode($templatesUrl), $this->_getSharedFolderAppName()])['stdout'];
+	    	
+	    	$this->_status->addMessage('info', $downloadLog);
+    	}
+    	
+    	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/whitelabel');
+    	exit;
     }
- */
+	
     public function installAction() {
 
     	$this->_checkIsCorrect();
@@ -583,14 +590,31 @@ class IndexController extends pm_Controller_Action {
     	
     	return $templatesUrl;
     }
+    
+    private function _getPremiumTemplatesUrl() {
+    	
+    	$templatesUrl = Modules_Microweber_Config::getUpdateAppUrl();
+    	$templatesUrl .= '/?api_function=get_download_link&get_extra_content=1&name=templates_paid&license_key=' . pm_Settings::get('wl_key');
+    	
+    	$json = $this->_getJson($templatesUrl);
+    	
+    	if (isset($json['url'])) {
+    		return $json['url'];
+    	}
+    }
 
     private function _getRelease() {
 
     	$releaseUrl = Modules_Microweber_Config::getUpdateAppUrl();
     	$releaseUrl .= '?api_function=get_download_link&get_last_version=';
+    
+    	return $this->_getJson($releaseUrl);
+    }
+    
+    private function _getJson($url) {
     	
         $tuCurl = curl_init();
-        curl_setopt($tuCurl, CURLOPT_URL, $releaseUrl);
+        curl_setopt($tuCurl, CURLOPT_URL, $url);
         curl_setopt($tuCurl, CURLOPT_VERBOSE, 0);
         curl_setopt($tuCurl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($tuCurl, CURLOPT_SSL_VERIFYPEER, false);

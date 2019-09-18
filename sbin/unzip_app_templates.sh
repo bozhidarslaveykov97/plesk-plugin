@@ -12,7 +12,7 @@ cd "$downloadCacheFolder" || exit
 
 zipDownloadedFile=$2'-app-templates-cache.zip';
 
-echo 'Download from url...'
+echo 'Download templates from url...'
 wget "$downloadUrl" -O "$zipDownloadedFile"
 
 # Unzip selected version
@@ -20,11 +20,11 @@ echo 'Unzip file...'
 unzip "$zipDownloadedFile" -d templates > unziping.log
 
 if [ ! -d '/usr/share/'"$2" ]; then
-	echo 'First download app.'
+	echo 'First you need to download the app.'
 	exit
 fi
 
-echo 'Rsync files /usr/share/'"$2"'/latest'
+echo 'Rsync files with /usr/share/'"$2"'/latest'
 rsync -a templates/userfiles /usr/share/"$2"/latest
 rm -rf templates
 
