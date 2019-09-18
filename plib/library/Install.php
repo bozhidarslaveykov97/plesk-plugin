@@ -6,6 +6,7 @@
 
 class Modules_Microweber_Install {
 
+	protected $_logger;
     protected $_appLatestVersionFolder = '/usr/share/microweber/latest';
     protected $_overwrite = true;
     protected $_domainId;
@@ -14,6 +15,10 @@ class Modules_Microweber_Install {
     protected $_email = '';
     protected $_username = '';
     protected $_password = '';
+    
+    public function __construct() {
+    	$this->_logger = new Modules_Microweber_Logger();
+    }
     
     public function setDomainId($id) {
         $this->_domainId = $id;
@@ -41,13 +46,13 @@ class Modules_Microweber_Install {
 
     public function run() {
         
-    	// $this->_domainId = 6;
-    	
         $domain = pm_Domain::getByDomainId($this->_domainId);
         
         if (empty($domain->getName())) {
             throw new \Exception('Domain not found.');
         } 
+        
+        $this->_logger->write('Start installing Microweber on domain: ' . $domain->getName());
         
         $dbPrefix = rand(111,999);
         $dbNameLength = 15;
@@ -57,6 +62,8 @@ class Modules_Microweber_Install {
         $dbPassword = $this->_getRandomPassword(12);
 
         if ($this->_databaseDriver == 'mysql') {
+        	
+        	$this->_logger->write('Create database for domain: ' . $domain->getName());
         	
 	        $dbManager = new Modules_Microweber_DatabaseManager();
 	        $dbManager->setDomainId($domain->getId());
@@ -89,10 +96,11 @@ class Modules_Microweber_Install {
         $domainIsActive = $domain->isActive();
         $domainCreation = $domain->getProperty('cr_date');
         
+        $this->_logger->write('Clear old folder on domain: ' . $domain->getName());
+        
         // Clear domain files if exists
         pm_ApiCli::callSbin('clear_domain_folder.sh', [$domainDocumentRoot]);
-       
-        
+       	
         if ($this->_type == 'symlink') {
         	
         	// First we will make a directories
@@ -140,6 +148,9 @@ class Modules_Microweber_Install {
         	$dbName = $domainDocumentRoot . '/storage/database1.sqlite';
         }
         
+        $whmcsConnector = new Modules_Microweber_WhmcsConnector();
+        $whmcsConnector->setDomainName($domainName);
+        
         $installArguments = array();
         
         $installArguments[] =  $adminEmail;
@@ -152,7 +163,7 @@ class Modules_Microweber_Install {
         $installArguments[] = $dbPassword;
         $installArguments[] = $this->_databaseDriver;
         $installArguments[] = '-p mw_';
-        $installArguments[] = '-t dream';
+        $installArguments[] = '-t ' . $whmcsConnector->getSelectedTemplate();
         $installArguments[] = '-d 1';
        // $installArguments[] = '-c 1';
         
@@ -162,6 +173,8 @@ class Modules_Microweber_Install {
         
         $artisan = pm_ApiCli::callSbin('run_php.sh', [$command]);  
       	
+        $this->_logger->write('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
+        
         // Repair domain permission
         pm_ApiCli::callSbin('repair_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
         
@@ -264,4 +277,5 @@ class Modules_Microweber_Install {
     	}
     	return implode($pass);
     }
+    
 }

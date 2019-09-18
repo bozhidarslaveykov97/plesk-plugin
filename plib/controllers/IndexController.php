@@ -45,7 +45,11 @@ class IndexController extends pm_Controller_Action {
             [
                 'title' => 'Settings',
                 'action' => 'settings',
-            ]
+            ],
+        	[
+        		'title' => 'Logs',
+        		'action' => 'logs',
+        	]
         ];
     }
 
@@ -55,6 +59,21 @@ class IndexController extends pm_Controller_Action {
     	
         $this->view->pageTitle = $this->_moduleName . ' - Domains';
         $this->view->list = $this->_getDomainsList();
+    }
+    
+    
+    public function logsAction() {
+    	
+    	$this->_checkIsCorrect();
+    	
+    	$this->view->pageTitle = $this->_moduleName . ' - Logs';
+    	
+    	$logger = new Modules_Microweber_Logger();
+    	
+    	$log =  $logger->read();
+    	
+    	$this->view->log = $log;
+    	
     }
     
     public function versionsAction() {
@@ -150,6 +169,13 @@ class IndexController extends pm_Controller_Action {
     	
     	if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
     		
+    		// Check license and save it to pm settings
+    		$licenseCheck = Modules_Microweber_LicenseData::getLicenseData($form->getValue('wl_key'));
+    		
+    		if (isset($licenseCheck['status'])) {
+    			pm_Settings::set('wl_license_data', json_encode($licenseCheck));
+    		}
+    		
     		pm_Settings::set('wl_key', $form->getValue('wl_key'));
     		pm_Settings::set('wl_brand_name', $form->getValue('wl_brand_name'));
     		pm_Settings::set('wl_admin_login_url', $form->getValue('wl_admin_login_url'));
@@ -165,6 +191,9 @@ class IndexController extends pm_Controller_Action {
     		$this->_status->addMessage('info', 'Settings was successfully saved.');
     		$this->_helper->json(['redirect' => pm_Context::getBaseUrl() . 'index.php/index/whitelabel']);
     	}
+    	
+    	// Show is licensed
+    	$this->_getLicensedView();
     	
     	$this->view->form = $form;
     }
@@ -393,6 +422,29 @@ class IndexController extends pm_Controller_Action {
         $this->view->form = $form;
     }
     
+    private function _getLicensedView() 
+   	{
+    	$this->view->isLicensed = false;
+    	
+    	$licenseData = pm_Settings::get('wl_license_data');
+    	
+    	if (!empty($licenseData)) {
+    		
+    		$licenseData = json_decode($licenseData, TRUE);
+    		
+    		if ($licenseData['status'] == 'active') {
+    			
+    			$this->view->isLicensed = true;
+    			$this->view->dueOn = $licenseData['due_on'];
+    			$this->view->registeredName = $licenseData['registered_name'];
+    			$this->view->relName = $licenseData['rel_name'];
+    			$this->view->regOn = date("Y-m-d", strtotime($licenseData['reg_on']));
+    			$this->view->billingCycle = $licenseData['billing_cycle'];
+    			
+    		}
+    	}
+    }
+    
     private function _checkIsCorrect() 
     {
     	if (empty(pm_Settings::get('shared_folder_app_name'))) {
@@ -526,7 +578,7 @@ class IndexController extends pm_Controller_Action {
     
     private function _getTemplatesUrl() {
     	
-    	$templatesUrl = pm_Settings::get('update_app_url');
+    	$templatesUrl = Modules_Microweber_Config::getUpdateAppUrl();
     	$templatesUrl .= '?api_function=download&get_extra_content=1&name=templates';
     	
     	return $templatesUrl;
@@ -534,7 +586,7 @@ class IndexController extends pm_Controller_Action {
 
     private function _getRelease() {
 
-    	$releaseUrl = pm_Settings::get('update_app_url');
+    	$releaseUrl = Modules_Microweber_Config::getUpdateAppUrl();
     	$releaseUrl .= '?api_function=get_download_link&get_last_version=';
     	
         $tuCurl = curl_init();

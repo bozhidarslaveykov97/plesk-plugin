@@ -21,6 +21,9 @@ class Modules_Microweber_EventListener implements EventListener
     		
 	    		try {
 	    			
+	    			// Wait to restart web server
+	    			sleep(10);
+	    			
 		    		$newInstallation = new Modules_Microweber_Install();
 		    		$newInstallation->setDomainId($objectId);
 		    		$newInstallation->setType(pm_Settings::get('installation_type'));
@@ -29,8 +32,8 @@ class Modules_Microweber_EventListener implements EventListener
 		    		
 	    		} catch (pm_Exception $e) {
 	    			pm_Settings::set('domain_issue_' . $objectId, pm_Locale::lmsg('microweberError',
-	    				['domain' => $domain->getDisplayName(), 'package' => $planItems[0], 'error' => $e->getMessage()]
-	    			)
+	    					['domain' => $domain->getDisplayName(), 'package' => $planItems[0], 'error' => $e->getMessage()]
+	    				)
 	    			);
 	    		}
     		}

@@ -8,6 +8,25 @@ textarea {
 .form-row .field-name {
     width: 300px;
 }
+.license-active {
+	padding:15px;
+	border-color: #c1e3ee #a3d1e2;
+	background:#bcdf94;
+	width:820px;
+}
 </style>
+
 <?php echo $this->renderTabs($this->tabs); ?>
+
+<?php if ($this->isLicensed): ?>
+<div class="license-active">
+Registered Name: <?php echo $this->registeredName; ?> <br />
+Plan: <?php echo $this->relName; ?> <br />
+Billing Cycle: <?php echo $this->billingCycle; ?> <br />
+Due on: <?php echo $this->dueOn; ?> <br />
+Registraion on: <?php echo $this->regOn; ?> <br />
+
+</div>
+<?php endif; ?>
+
 <?php echo $this->form; ?>
