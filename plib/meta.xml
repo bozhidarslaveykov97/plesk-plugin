@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <module>
-  <id>credocart</id>
-  <name>CredoCart</name>
+  <id>microweber</id>
+  <name>Microweber</name>
   <description>Automatic app installer.</description>
   <version>1.0</version>
   <release>5</release>
   <vendor/>
-  <url>http://credocart.com</url>
+  <url>http://microweber.com</url>
 </module>

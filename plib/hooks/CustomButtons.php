@@ -23,6 +23,14 @@ class Modules_Microweber_CustomButtons extends pm_Hook_CustomButtons
 				'icon' => pm_Context::getBaseUrl() . 'images/logo_small_white.svg'
 			],
 			[
+				'place' => self::PLACE_HOSTING_PANEL_TABS,
+				'order' => 3,
+				'title' => 'Microweber',
+				'description' => 'Install last version of microweber',
+				'link' => pm_Context::getActionUrl('index'), 
+				'icon' => pm_Context::getBaseUrl() . 'images/logo_small_white.svg',
+			],
+			[
 				'place' => self::PLACE_DOMAIN_PROPERTIES,
 				'order' => 3,
 				'title' => 'Microweber',
