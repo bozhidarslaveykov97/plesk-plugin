@@ -1,6 +1,6 @@
 <?php
 
-class Modules_Microweber_DatabaseManager
+class Modules_Credocart_DatabaseManager
 {
 	protected $_domainId;
 	
