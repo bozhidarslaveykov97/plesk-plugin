@@ -558,7 +558,7 @@ class IndexController extends pm_Controller_Action {
             }
             
             $data[$i] = [
-                'domain' => '<a href="#">' . $domainName . '</a>',
+            	'domain' => '<a href="http://'.$domainName.'" target="_blank">' . $domainName . '</a>',
                 'created_date' => $domainCreation,
                 'type' => $installationType,
             	'app_version' => $appVersion,
@@ -575,7 +575,7 @@ class IndexController extends pm_Controller_Action {
         $list = new pm_View_List_Simple($this->view, $this->_request, $options);
         $list->setData($data);
         $list->setColumns([
-            pm_View_List_Simple::COLUMN_SELECTION,
+            // pm_View_List_Simple::COLUMN_SELECTION,
             'domain' => [
                 'title' => 'Domain',
                 'noEscape' => true,
