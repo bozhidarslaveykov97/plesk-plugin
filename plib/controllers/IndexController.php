@@ -180,25 +180,31 @@ class IndexController extends pm_Controller_Action {
     		// Check license and save it to pm settings
     		$licenseCheck = Modules_Microweber_LicenseData::getLicenseData($form->getValue('wl_key'));
     		
-    		if (isset($licenseCheck['status'])) {
+    		pm_Settings::set('wl_key', $form->getValue('wl_key'));
+    		
+    		if (isset($licenseCheck['status']) && $licenseCheck['status'] =='active') { 
+    			
     			pm_Settings::set('wl_license_data', json_encode($licenseCheck));
+	    		pm_Settings::set('wl_brand_name', $form->getValue('wl_brand_name'));
+	    		pm_Settings::set('wl_admin_login_url', $form->getValue('wl_admin_login_url'));
+	    		pm_Settings::set('wl_contact_page', $form->getValue('wl_contact_page'));
+	    		pm_Settings::set('wl_enable_support_links', $form->getValue('wl_enable_support_links'));
+	    		pm_Settings::set('wl_powered_by', $form->getValue('wl_powered_by'));
+	    		pm_Settings::set('wl_hide_powered_by_link', $form->getValue('wl_hide_powered_by_link'));
+	    		pm_Settings::set('wl_logo_admin_panel', $form->getValue('wl_logo_admin_panel'));
+	    		pm_Settings::set('wl_logo_live_edit_toolbar', $form->getValue('wl_logo_live_edit_toolbar'));
+	    		pm_Settings::set('wl_logo_login_screen', $form->getValue('wl_logo_login_screen'));
+	    		pm_Settings::set('wl_disable_microweber_marketplace', $form->getValue('wl_disable_microweber_marketplace'));
+	    		
+	    		Modules_Microweber_WhiteLabel::updateWhiteLabelDomains();
+	    		
+	    		$this->_status->addMessage('info', 'Settings was successfully saved.');
+    		
+    		} else {
+    			pm_Settings::set('wl_license_data', false);
+    			$this->_status->addMessage('error', 'The license key is wrong or expired. Please, contact us at: http://microweber.org');
     		}
     		
-    		pm_Settings::set('wl_key', $form->getValue('wl_key'));
-    		pm_Settings::set('wl_brand_name', $form->getValue('wl_brand_name'));
-    		pm_Settings::set('wl_admin_login_url', $form->getValue('wl_admin_login_url'));
-    		pm_Settings::set('wl_contact_page', $form->getValue('wl_contact_page'));
-    		pm_Settings::set('wl_enable_support_links', $form->getValue('wl_enable_support_links'));
-    		pm_Settings::set('wl_powered_by', $form->getValue('wl_powered_by'));
-    		pm_Settings::set('wl_hide_powered_by_link', $form->getValue('wl_hide_powered_by_link'));
-    		pm_Settings::set('wl_logo_admin_panel', $form->getValue('wl_logo_admin_panel'));
-    		pm_Settings::set('wl_logo_live_edit_toolbar', $form->getValue('wl_logo_live_edit_toolbar'));
-    		pm_Settings::set('wl_logo_login_screen', $form->getValue('wl_logo_login_screen'));
-    		pm_Settings::set('wl_disable_microweber_marketplace', $form->getValue('wl_disable_microweber_marketplace'));
-    		
-    		Modules_Microweber_WhiteLabel::updateWhiteLabelDomains();
-    		
-    		$this->_status->addMessage('info', 'Settings was successfully saved.');
     		$this->_helper->json(['redirect' => pm_Context::getBaseUrl() . 'index.php/index/whitelabel']);
     	}
     	
