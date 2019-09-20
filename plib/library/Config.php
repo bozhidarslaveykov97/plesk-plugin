@@ -3,6 +3,11 @@
 
 class Modules_Microweber_Config
 {
+	public static function getAppLatestVersionFolder() 
+	{
+		return '/usr/share/microweber/latest';
+	}
+	
 	public static function getPlanItems()
 	{
 		return [

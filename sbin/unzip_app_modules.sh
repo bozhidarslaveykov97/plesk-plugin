@@ -17,7 +17,7 @@ wget "$downloadUrl" -O "$zipDownloadedFile"
 
 # Unzip selected version
 echo 'Unzip file...'
-unzip "$zipDownloadedFile" -d modules > unziping.log
+unzip "$zipDownloadedFile" > unziping.log
 
 if [ ! -d '/usr/share/'"$2" ]; then
 	echo 'First you need to download the app.'
@@ -25,8 +25,8 @@ if [ ! -d '/usr/share/'"$2" ]; then
 fi
 
 echo 'Rsync files with /usr/share/'"$2"'/latest'
-rsync -a modules/userfiles /usr/share/"$2"/latest
-rm -rf modules
+rsync -a whmcs-connector-master/userfiles /usr/share/"$2"/latest
+rm -rf whmcs-connector-master
 
 chmod 755 -R /usr/share/"$2"/latest/userfiles
 

@@ -5,15 +5,12 @@ class Modules_Microweber_WhiteLabel
 
 	public static function updateWhiteLabelDomainById($domainId)
 	{
-		
 		$domain = Modules_Microweber_Domain::getUserDomainById($domainId);
-		
-		$json = self::getWhiteLabelJson();
 
 		$fileManager = new pm_FileManager($domain->getId());
 
 		if ($fileManager->fileExists($domain->getDocumentRoot() . '/config/microweber.php')) {
-			$fileManager->filePutContents($domain->getDocumentRoot() . '/storage/branding.json', $json);
+			$fileManager->filePutContents($domain->getDocumentRoot() . '/storage/branding.json', self::getWhiteLabelJson());
 		}
 	}
 
@@ -23,7 +20,7 @@ class Modules_Microweber_WhiteLabel
 			self::updateWhiteLabelDomainById($domain->getId());
 		}
 	}
-
+	
 	public static function getWhiteLabelJson()
 	{
 		$whiteLabelSettings = array();
@@ -38,8 +35,6 @@ class Modules_Microweber_WhiteLabel
 		$whiteLabelSettings['disable_powered_by_link'] = pm_Settings::get('wl_hide_powered_by_link');
 		$whiteLabelSettings['enable_service_links'] = pm_Settings::get('wl_enable_support_links');
 
-		$json = json_encode($whiteLabelSettings, JSON_PRETTY_PRINT);
-
-		return $json;
+		return json_encode($whiteLabelSettings, JSON_PRETTY_PRINT);
 	}
 }

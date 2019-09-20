@@ -7,7 +7,7 @@
 class Modules_Microweber_Install {
 
 	protected $_logger;
-    protected $_appLatestVersionFolder = '/usr/share/microweber/latest';
+    protected $_appLatestVersionFolder = false;
     protected $_overwrite = true;
     protected $_domainId;
     protected $_type = 'default';
@@ -17,7 +17,9 @@ class Modules_Microweber_Install {
     protected $_password = '';
     
     public function __construct() {
+    	
     	$this->_logger = new Modules_Microweber_Logger();
+    	$this->_appLatestVersionFolder = Modules_Microweber_Config::getAppLatestVersionFolder();
     }
     
     public function setDomainId($id) {

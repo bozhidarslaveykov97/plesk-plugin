@@ -13,6 +13,23 @@ class Modules_Microweber_WhmcsConnector {
 		$this->_domainName = $name;
 	}
 	
+	public static function updateWhmcsConnector() {
+	
+		$whmcsJson = array();
+		$whmcsJson['url'] = pm_Settings::get('whmcs_url');
+		$whmcsJson['whmcs_url'] = pm_Settings::get('whmcs_url');
+		
+		$whmcsJson = json_encode($whmcsJson, JSON_PRETTY_PRINT);
+		
+		$whmFilePath = Modules_Microweber_Config::getAppLatestVersionFolder() . '/userfiles/modules/whmcs_connector/settings.json';
+		$whmFilePathCache =  pm_ProductInfo::getPrivateTempDir() . '/whmcs_connector_settings_cache.json';
+		
+		file_put_contents($whmFilePathCache, $whmcsJson);
+		
+		pm_ApiCli::callSbin('copy_file.sh',[$whmFilePathCache, $whmFilePath]);
+		
+	}
+	
 	public function getSelectedTemplate() {
 		
 		$this->_logger->write('Get selected template for domain: ' . $this->_domainName);

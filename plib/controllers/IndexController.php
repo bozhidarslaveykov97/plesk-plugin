@@ -6,21 +6,11 @@ class IndexController extends pm_Controller_Action {
         'admin',
     	'client'
     ];
-    protected $_moduleName = '';
-	protected $_modulePath = false;
+    protected $_moduleName = 'Microweber';
 	
     public function init() {
     	
         parent::init();
-        
-        // Find module path
-        $this->_modulePath = substr(realpath(dirname(__FILE__)), 0, - strlen('controllers'));
-       	
-        // Get configuration file
-        $configuration = include($this->_modulePath . 'configuration.php');
-        
-        // Set module name
-        $this->_moduleName = $configuration['name'];
         
         // Set module name to views
         $this->view->moduleName = $this->_moduleName;
@@ -233,6 +223,12 @@ class IndexController extends pm_Controller_Action {
     	
     	$this->_status->addMessage('info', $downloadLog);
     	
+    	// Whm Connector
+    	$downloadUrl = 'https://github.com/microweber-dev/whmcs-connector/archive/master.zip';
+    	$downloadLog = pm_ApiCli::callSbin('unzip_app_modules.sh',[base64_encode($downloadUrl), $this->_getSharedFolderAppName()])['stdout'];
+    	
+    	Modules_Microweber_WhmcsConnector::updateWhmcsConnector();
+    	
     	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/versions');
     	exit;
     }
@@ -258,22 +254,14 @@ class IndexController extends pm_Controller_Action {
     	if (!pm_Session::getClient()->isAdmin()) {
     		throw new Exception('You don\'t have permissions to see this page.');
     	}
-    	/* 
+    	 
     	$templatesUrl = $this->_getPremiumTemplatesUrl();
     	
     	if ($templatesUrl) {
 	    	$downloadLog = pm_ApiCli::callSbin('unzip_app_templates.sh',[base64_encode($templatesUrl), $this->_getSharedFolderAppName()])['stdout'];
 	    	
 	    	$this->_status->addMessage('info', $downloadLog);
-    	} */
-    	
-    	// Whm Connector 
-    	$downloadUrl = 'https://github.com/microweber-dev/whmcs-connector/archive/master.zip';
-    	$downloadLog = pm_ApiCli::callSbin('unzip_app_modules.sh',[base64_encode($downloadUrl), $this->_getSharedFolderAppName()])['stdout'];
-    	
-    	
-    	var_dump($downloadLog);
-    	die();
+    	}
     	
     	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/whitelabel');
     	exit;
