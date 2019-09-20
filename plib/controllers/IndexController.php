@@ -206,6 +206,8 @@ class IndexController extends pm_Controller_Action {
     		pm_Settings::set('wl_logo_login_screen', $form->getValue('wl_logo_login_screen'));
     		pm_Settings::set('wl_disable_microweber_marketplace', $form->getValue('wl_disable_microweber_marketplace'));
     		
+    		Modules_Microweber_WhiteLabel::updateWhiteLabelDomains();
+    		
     		$this->_status->addMessage('info', 'Settings was successfully saved.');
     		$this->_helper->json(['redirect' => pm_Context::getBaseUrl() . 'index.php/index/whitelabel']);
     	}
@@ -256,14 +258,22 @@ class IndexController extends pm_Controller_Action {
     	if (!pm_Session::getClient()->isAdmin()) {
     		throw new Exception('You don\'t have permissions to see this page.');
     	}
-    	
+    	/* 
     	$templatesUrl = $this->_getPremiumTemplatesUrl();
     	
     	if ($templatesUrl) {
 	    	$downloadLog = pm_ApiCli::callSbin('unzip_app_templates.sh',[base64_encode($templatesUrl), $this->_getSharedFolderAppName()])['stdout'];
 	    	
 	    	$this->_status->addMessage('info', $downloadLog);
-    	}
+    	} */
+    	
+    	// Whm Connector 
+    	$downloadUrl = 'https://github.com/microweber-dev/whmcs-connector/archive/master.zip';
+    	$downloadLog = pm_ApiCli::callSbin('unzip_app_modules.sh',[base64_encode($downloadUrl), $this->_getSharedFolderAppName()])['stdout'];
+    	
+    	
+    	var_dump($downloadLog);
+    	die();
     	
     	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/whitelabel');
     	exit;

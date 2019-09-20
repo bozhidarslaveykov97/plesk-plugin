@@ -180,6 +180,8 @@ class Modules_Microweber_Install {
         // Repair domain permission
         pm_ApiCli::callSbin('repair_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
         
+        Modules_Microweber_WhiteLabel::updateWhiteLabelDomainById($domain->getId());
+        
         return array('success'=>true, 'log'=> $artisan['stdout']);
         
     }
