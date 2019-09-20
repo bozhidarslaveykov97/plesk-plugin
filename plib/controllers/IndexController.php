@@ -220,20 +220,7 @@ class IndexController extends pm_Controller_Action {
     		throw new Exception('You don\'t have permissions to see this page.');
     	}
     	
-    	$release = $this->_getRelease();
-    	if (empty($release)) {
-    		return;
-    	}
-    	
-    	$downloadLog = pm_ApiCli::callSbin('unzip_app_version.sh',[base64_encode($release['url']), $this->_getSharedFolderAppName()])['stdout'];
-    	
-    	$this->_status->addMessage('info', $downloadLog);
-    	
-    	// Whm Connector
-    	$downloadUrl = 'https://github.com/microweber-dev/whmcs-connector/archive/master.zip';
-    	$downloadLog = pm_ApiCli::callSbin('unzip_app_modules.sh',[base64_encode($downloadUrl), $this->_getSharedFolderAppName()])['stdout'];
-    	
-    	Modules_Microweber_WhmcsConnector::updateWhmcsConnector();
+    	$this->_status->addMessage('info', $this->_updateApp());
     	
     	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/versions');
     	exit;
@@ -245,11 +232,7 @@ class IndexController extends pm_Controller_Action {
     		throw new Exception('You don\'t have permissions to see this page.');
     	}
     	
-    	$templatesUrl = $this->_getTemplatesUrl();
-    	
-    	$downloadLog = pm_ApiCli::callSbin('unzip_app_templates.sh',[base64_encode($templatesUrl), $this->_getSharedFolderAppName()])['stdout'];
-    	
-    	$this->_status->addMessage('info', $downloadLog);
+    	$this->_status->addMessage('info', $this->_updateTemplates());
     	
     	header("Location: " . pm_Context::getBaseUrl() . 'index.php/index/versions');
     	exit;
@@ -332,6 +315,18 @@ class IndexController extends pm_Controller_Action {
 
             $post = $this->getRequest()->getPost();
 			
+            $currentVersion = $this->_getCurrentVersion();
+            if ($currentVersion == 'unknown') {
+            	$this->_updateApp();
+            	$this->_updateTemplates();
+            }
+            
+            $currentVersion = $this->_getCurrentVersion();
+            if ($currentVersion == 'unknown') {
+            	$this->_status->addMessage('error', 'Can\'t install app becasue not releases found.');
+            	$this->_helper->json(['redirect' => pm_Context::getBaseUrl(). 'index.php/index/index']);
+            }
+            
             try {
             	
             	$newInstallation = new Modules_Microweber_Install();
@@ -407,13 +402,13 @@ class IndexController extends pm_Controller_Action {
         $form->addElement('text', 'update_app_url', [
         	'label' => 'Update App Url',
         	'value' => pm_Settings::get('update_app_url'),
-        	'required' => true,
+        	//'required' => true,
         ]);
         
         $form->addElement('text', 'whmcs_url', [
         	'label' => 'WHMCS Url',
         	'value' => pm_Settings::get('whmcs_url'),
-        	'required' => true,
+        	//'required' => true,
         ]);
         
         /*
@@ -463,6 +458,34 @@ class IndexController extends pm_Controller_Action {
         }
 
         $this->view->form = $form;
+    }
+    
+    
+    private function _updateApp() {
+    	
+    	$release = $this->_getRelease();
+    	
+    	if (empty($release)) {
+    		return 'No releases fond.';
+    	}
+    	
+    	$downloadLog = pm_ApiCli::callSbin('unzip_app_version.sh',[base64_encode($release['url']), $this->_getSharedFolderAppName()])['stdout'];
+    	
+    	// Whm Connector
+    	$downloadUrl = 'https://github.com/microweber-dev/whmcs-connector/archive/master.zip';
+    	$downloadLogModules = pm_ApiCli::callSbin('unzip_app_modules.sh',[base64_encode($downloadUrl), $this->_getSharedFolderAppName()])['stdout'];
+    	
+    	Modules_Microweber_WhmcsConnector::updateWhmcsConnector();
+    	
+    	return $downloadLog;
+    }
+    
+    private function _updateTemplates() {
+    	
+    	$templatesUrl = $this->_getTemplatesUrl();
+    	$downloadLog = pm_ApiCli::callSbin('unzip_app_templates.sh',[base64_encode($templatesUrl), $this->_getSharedFolderAppName()])['stdout'];
+    	
+    	return $downloadLog;
     }
     
     private function _getLicensedView() 
@@ -525,7 +548,7 @@ class IndexController extends pm_Controller_Action {
     
     private function _getSharedFolderAppName() {
     	
-    	$sharedFolderAppName = pm_Settings::get('shared_folder_app_name');
+    	$sharedFolderAppName = pm_Settings::get('shared_folder_app_name', 'microweber');
     	
     	if (empty($sharedFolderAppName)) {
     		$sharedFolderAppName = strtolower($this->_moduleName);
