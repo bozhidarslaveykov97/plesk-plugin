@@ -52,7 +52,7 @@ class Modules_Microweber_Install {
         
         if (empty($domain->getName())) {
             throw new \Exception('Domain not found.');
-        } 
+        }
         
         $this->_logger->write('Start installing Microweber on domain: ' . $domain->getName());
         
@@ -180,7 +180,7 @@ class Modules_Microweber_Install {
         $this->_logger->write('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
         
         // Repair domain permission
-        pm_ApiCli::callSbin('repair_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
+        Modules_Microweber_Config::fixDomainPermissions($domain->getId());
         
         Modules_Microweber_WhiteLabel::updateWhiteLabelDomainById($domain->getId());
         

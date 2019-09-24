@@ -356,6 +356,10 @@ class IndexController extends pm_Controller_Action {
             	
             	$this->_status->addMessage('info', 'App is installed successfuly on selected domain.');
             } catch (Exception $e) {
+            	
+            	// Repair domain permission
+            	Modules_Microweber_Config::fixDomainPermissions($post['installation_domain']);
+            	
             	$this->_status->addMessage('error', $e->getMessage());
             }
             
@@ -407,13 +411,13 @@ class IndexController extends pm_Controller_Action {
         
         $form->addElement('text', 'update_app_url', [
         	'label' => 'Update App Url',
-        	'value' => pm_Settings::get('update_app_url'),
+        	'value' => Modules_Microweber_Config::getUpdateAppUrl(),
         	//'required' => true,
         ]);
         
         $form->addElement('text', 'whmcs_url', [
         	'label' => 'WHMCS Url',
-        	'value' => pm_Settings::get('whmcs_url'),
+        	'value' => Modules_Microweber_Config::getWhmcsUrl(),
         	//'required' => true,
         ]);
         

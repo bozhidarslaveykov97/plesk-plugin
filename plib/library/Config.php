@@ -1,13 +1,14 @@
 <?php
-// Copyright 1999-2017. Parallels IP Holdings GmbH.
 
+// Copyright 1999-2017. Parallels IP Holdings GmbH.
 class Modules_Microweber_Config
 {
-	public static function getAppLatestVersionFolder() 
+
+	public static function getAppLatestVersionFolder()
 	{
 		return '/usr/share/microweber/latest';
 	}
-	
+
 	public static function getPlanItems()
 	{
 		return [
@@ -18,11 +19,36 @@ class Modules_Microweber_Config
 
 	public static function getUpdateAppUrl()
 	{
-		return pm_Settings::get('update_app_url', 'https://update.microweberapi.com/');
+		$updateAppUrl = pm_Settings::get('update_app_url');
+
+		if (empty($updateAppUrl)) {
+			return 'https://update.microweberapi.com/';
+		}
+
+		return $updateAppUrl;
 	}
 
 	public static function getWhmcsUrl()
 	{
-		return pm_Settings::get('whmcs_url', 'https://members.microweber.com/');
+		$updateWhmcsUrl = pm_Settings::get('whmcs_url');
+
+		if (empty($updateWhmcsUrl)) {
+			return 'https://members.microweber.com/';
+		}
+
+		return $updateWhmcsUrl;
+	}
+	
+	public static function fixDomainPermissions($domainId) {
+		
+		$domain = pm_Domain::getByDomainId($domainId);
+		
+		if (!empty($domain->getName())) {
+			
+			// Repair domain permission
+			pm_ApiCli::callSbin('repair_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
+			
+		}
+		
 	}
 }

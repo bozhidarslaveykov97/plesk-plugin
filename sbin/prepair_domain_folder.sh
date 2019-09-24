@@ -6,7 +6,11 @@ if [ "$username" != "root" ]; then
     exit 1
 fi
 
+customtime=`date +"%Y-%m-%d-%H-%M-%S"`
+
 if [[ -f "$1/index.html" ]]; then
     echo "$1 is a file"
-    unlink "$1/index.html"
+    mv "$1/index.html" "$1/index.html.$customtime"
 fi
+
+exit
