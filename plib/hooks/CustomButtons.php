@@ -40,7 +40,7 @@ class Modules_Microweber_CustomButtons extends pm_Hook_CustomButtons
 				'title' => 'Microweber',
 				'description' => 'Install last version of microweber',
 				'link' => pm_Context::getActionUrl('index', 'install'),
-				'icon' => pm_Context::getBaseUrl() . 'images/logo_small.svg' 
+				'icon' => pm_Context::getBaseUrl() . 'images/logo_small_white.svg' 
 			],
 		];
 	}
