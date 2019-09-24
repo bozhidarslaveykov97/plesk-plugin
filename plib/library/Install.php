@@ -101,7 +101,7 @@ class Modules_Microweber_Install {
         $this->_logger->write('Clear old folder on domain: ' . $domain->getName());
         
         // Clear domain files if exists
-        pm_ApiCli::callSbin('clear_domain_folder.sh', [$domainDocumentRoot]);
+        pm_ApiCli::callSbin('prepair_domain_folder.sh', [$domainDocumentRoot]);
        	
         if ($this->_type == 'symlink') {
         	

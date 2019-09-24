@@ -262,7 +262,7 @@ class IndexController extends pm_Controller_Action {
     	
         $this->view->pageTitle = $this->_moduleName . ' - Install';
 
-        $domainsSelect = [];
+        $domainsSelect = array('no_select'=> 'Select domain to install..');
         foreach (Modules_Microweber_Domain::getDomains() as $domain) {
 
             $domainId = $domain->getId();
@@ -278,6 +278,12 @@ class IndexController extends pm_Controller_Action {
             'multiOptions' => $domainsSelect,
             'required' => true,
         ]);
+        
+        $form->addElement(
+        	new Zend_Form_Element_Note('create_new_domain_link', 
+        		array('value' => '<a href="/smb/web/add-domain" style="margin-left:175px;top: -15px;position:relative;">Create New Domain</a>')
+        	)
+        );
         
         $form->addElement('radio', 'installation_type', [
             'label' => 'Installation Type',

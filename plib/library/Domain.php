@@ -8,6 +8,17 @@ class Modules_Microweber_Domain
 	
 	public static function getDomains()
 	{
+		$httpHost = '';
+		if (isset($_SERVER['HTTP_HOST'])) {
+			$httpHost = $_SERVER['HTTP_HOST'];
+			$exp = explode(":", $httpHost);
+			if (isset($exp[0])) {
+				$httpHost = $exp[0];
+				
+				self::$_excludeDomains[] = $httpHost;
+			}
+		}
+		
 		if (pm_Session::getClient()->isAdmin()) {
 			$domains = pm_Domain::getAllDomains();
 		} else {
