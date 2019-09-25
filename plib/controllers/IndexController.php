@@ -303,14 +303,30 @@ class IndexController extends pm_Controller_Action {
         	'required' => true,
         ]);
         
+        $httpHost = '';
+        if (isset($_SERVER['HTTP_HOST'])) {
+        	$httpHost = $_SERVER['HTTP_HOST'];
+        	$exp = explode(":", $httpHost);
+        	if (isset($exp[0])) {
+        		$httpHost = $exp[0];
+        	}
+        }
+        
+        $adminUsername = 'mw_' . $this->_getRandomPassword(6);
+        $adminEmail = $adminUsername . '@' . $httpHost;
+        $adminPassword = $this->_getRandomPassword(12);
+        
         $form->addElement('text', 'installation_email', [
         	'label' => 'Admin Email',
+        	'value' => $adminEmail,
         ]);
         $form->addElement('text', 'installation_username', [
         	'label' => 'Admin Username',
+        	'value' => $adminUsername,
         ]);
-        $form->addElement('password', 'installation_password', [
+        $form->addElement('text', 'installation_password', [
         	'label' => 'Admin Password',
+        	'value' => $adminPassword,
         ]);
 
         $form->addControlButtons([
@@ -339,6 +355,7 @@ class IndexController extends pm_Controller_Action {
             	$newInstallation->setDomainId($post['installation_domain']);
             	$newInstallation->setType($post['installation_type']);
             	$newInstallation->setDatabaseDriver($post['installation_database_driver']);
+            	$newInstallation->setPath($post['installation_folder']);
             	
             	if (!empty($post['installation_email'])) {
             		$newInstallation->setEmail($post['installation_email']);
@@ -367,6 +384,51 @@ class IndexController extends pm_Controller_Action {
         }
 
         $this->view->form = $form;
+    }
+    
+    public function checkinstallpathAction() {
+    	
+    	$json = array();
+    	$json['found_app'] = false;
+    	$json['found_thirdparty_app'] = false;
+    	
+    	try {
+    		
+    		$domainId = (int) $_GET['installation_domain'];
+    		$domainInstallPath = trim($_GET['installation_folder']);
+    		
+    		$domain = Modules_Microweber_Domain::getUserDomainById($domainId);
+    		$fileManager = new pm_FileManager($domain->getId());
+    		
+    		if (!empty($domainInstallPath)) {
+    			$domainInstallPath = $domain->getDocumentRoot() .'/' .$domainInstallPath;
+    		} else {
+    			$domainInstallPath = $domain->getDocumentRoot();
+    		}
+    		
+    		if ($fileManager->fileGetContents($domainInstallPath. '/index.php')) {
+    			$json['found_thirdparty_app'] = true;
+    		}
+    		
+    		if ($fileManager->fileGetContents($domainInstallPath. '/index.html')) {
+    			$json['found_thirdparty_app'] = true;
+    		}
+    		
+    		if ($fileManager->fileExists($domainInstallPath. '/vendor')) {
+    			$json['found_thirdparty_app'] = true;
+    		}
+    		
+    		if ($fileManager->fileGetContents($domainInstallPath. '/config/microweber.php')) {
+    			$json['found_app'] = true;
+    		}
+    		
+    		$json['domain_found'] = true;
+    	} catch (Exception $e) {
+    		$json['domain_found'] = false;
+    	}
+    	
+    	
+    	die(json_encode($json, JSON_PRETTY_PRINT));
     }
 
     public function settingsAction() {
@@ -470,6 +532,17 @@ class IndexController extends pm_Controller_Action {
         $this->view->form = $form;
     }
     
+    private function _getRandomPassword($length = 16)
+    {
+    	$alphabet = 'ghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    	$pass = array();
+    	$alphaLength = strlen($alphabet) - 1;
+    	for ($i = 0; $i < $length; $i++) {
+    		$n = rand(0, $alphaLength);
+    		$pass[] = $alphabet[$n];
+    	}
+    	return implode($pass);
+    }
     
     private function _updateApp() {
     	

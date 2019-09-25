@@ -15,11 +15,16 @@ class Modules_Microweber_Install {
     protected $_email = '';
     protected $_username = '';
     protected $_password = '';
+    protected $_path = false;
     
     public function __construct() {
     	
     	$this->_logger = new Modules_Microweber_Logger();
     	$this->_appLatestVersionFolder = Modules_Microweber_Config::getAppLatestVersionFolder();
+    }
+    
+    public function setPath($path) {
+    	$this->_path = $path;	
     }
     
     public function setDomainId($id) {
@@ -93,7 +98,12 @@ class Modules_Microweber_Install {
 	        }
         }
 
-        $domainDocumentRoot = $domain->getDocumentRoot();
+        $domainDocumentRoot = $domain->getDocumentRoot(); 
+        
+        if ($this->_path) {
+        	$domainDocumentRoot = $domainDocumentRoot . '/'.$this->_path;
+        }
+        
         $domainName = $domain->getName();
         $domainIsActive = $domain->isActive();
         $domainCreation = $domain->getProperty('cr_date');
