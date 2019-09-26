@@ -61,13 +61,12 @@ class Modules_Microweber_Install {
         
         $this->_logger->write('Start installing Microweber on domain: ' . $domain->getName());
         
-        $dbPrefix = rand(111,999);
-        $dbNameLength = 15;
-        $dbName = $dbPrefix . str_replace('.', '', $domain->getName());
-        $dbName = substr($dbName, 0, $dbNameLength);
+        $dbName =  str_replace('.', '', $domain->getName());
+        $dbName = substr($dbName, 0, 9);
+        $dbName .= '_'.date('His');  
         $dbUsername = $dbName;
         $dbPassword = $this->_getRandomPassword(12);
-
+        
         if ($this->_databaseDriver == 'mysql') {
         	
         	$this->_logger->write('Create database for domain: ' . $domain->getName());

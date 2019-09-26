@@ -312,7 +312,7 @@ class IndexController extends pm_Controller_Action {
         	}
         }
         
-        $adminUsername = 'mw_' . $this->_getRandomPassword(6);
+        $adminUsername = 'mw_' . $this->_getRandomPassword(9);
         $adminEmail = $adminUsername . '@' . $httpHost;
         $adminPassword = $this->_getRandomPassword(12);
         
@@ -406,11 +406,11 @@ class IndexController extends pm_Controller_Action {
     			$domainInstallPath = $domain->getDocumentRoot();
     		}
     		
-    		if ($fileManager->fileGetContents($domainInstallPath. '/index.php')) {
+    		if ($fileManager->fileExists($domainInstallPath. '/index.php')) {
     			$json['found_thirdparty_app'] = true;
     		}
     		
-    		if ($fileManager->fileGetContents($domainInstallPath. '/index.html')) {
+    		if ($fileManager->fileExists($domainInstallPath. '/index.html')) {
     			$json['found_thirdparty_app'] = true;
     		}
     		
@@ -418,12 +418,14 @@ class IndexController extends pm_Controller_Action {
     			$json['found_thirdparty_app'] = true;
     		}
     		
-    		if ($fileManager->fileGetContents($domainInstallPath. '/config/microweber.php')) {
+    		if ($fileManager->fileExists($domainInstallPath. '/config/microweber.php')) {
     			$json['found_app'] = true;
     		}
     		
     		$json['domain_found'] = true;
     	} catch (Exception $e) {
+    		
+    		$json['error'] = $e->getMessage();
     		$json['domain_found'] = false;
     	}
     	
@@ -640,50 +642,70 @@ class IndexController extends pm_Controller_Action {
     	return $sharedFolderAppName;
     }
     
+    private function _getAppInstalations() {
+    	
+    	$data = [];
+    	
+    	$i = 0;
+    	foreach (Modules_Microweber_Domain::getDomains() as $domain) {
+    		
+    		$domainDocumentRoot = $domain->getDocumentRoot();
+    		$domainName = $domain->getName();
+    		$domainIsActive = $domain->isActive();
+    		$domainCreation = $domain->getProperty('cr_date');
+    		
+    		$appVersion = 'unknown';
+    		$installationType = 'unknown';
+    		
+    		$fileManager = new pm_FileManager($domain->getId());
+    		
+    		$installationsFind = $fileManager->find(['microweber.php'], true);
+    		
+    		if (!empty($installationsFind)) {
+    			
+    			foreach ($installationsFind as $appInstallationConfig) {
+    				
+    				$appInstallation = str_replace('/config/microweber.php', false, $appInstallationConfig);
+    				
+		    		// Find app in main folder
+    				if ($fileManager->fileExists($appInstallation . '/version.txt')) {
+    					$appVersion = $fileManager->fileGetContents($appInstallation . '/version.txt');
+		    		}
+		    		
+		    		if (is_link($appInstallation . '/vendor')) {
+		    			$installationType = 'Symlinked';
+		    		} else {
+		    			$installationType = 'Standalone';
+		    		}
+		    		
+		    		$domainNameUrl = $appInstallation;
+		    		$domainNameUrl = str_replace('/var/www/vhosts/', false, $domainNameUrl);
+		    		$domainNameUrl = str_replace($domainName . '/httpdocs', $domainName, $domainNameUrl);
+		    		
+		    		$data[$i] = [
+		    			'domain' => '<a href="http://'.$domainNameUrl.'" target="_blank">' . $domainNameUrl . '</a>',
+		    			'created_date' => $domainCreation,
+		    			'type' => $installationType,
+		    			'app_version' => $appVersion,
+		    			'document_root' => $appInstallation,
+		    			'active' => ($domainIsActive ? 'Yes' : 'No')
+		    		];
+		    		$i++;
+    			}
+    		}
+    	}
+    	
+    	return $data;
+    }
+    
     private function _getDomainsList() {
-
-        $data = [];
-        
-        $i = 0;
-        foreach (Modules_Microweber_Domain::getDomains() as $domain) {
-        	
-            $domainDocumentRoot = $domain->getDocumentRoot();
-            $domainName = $domain->getName();
-            $domainIsActive = $domain->isActive();
-            $domainCreation = $domain->getProperty('cr_date');
-			
-            $appVersion = 'unknown';
-            $installationType = 'unknown';
-            
-            $fileManager = new pm_FileManager($domain->getId());
-            
-            if ($fileManager->fileExists($domain->getDocumentRoot() . '/version.txt')) {
-            	$appVersion = $fileManager->fileGetContents($domain->getDocumentRoot() . '/version.txt');
-            }
-            
-            if (is_link($domain->getDocumentRoot() . '/vendor')) {
-            	$installationType = 'Symlinked';
-            } else {
-            	$installationType = 'Standalone';
-            }
-            
-            $data[$i] = [
-            	'domain' => '<a href="http://'.$domainName.'" target="_blank">' . $domainName . '</a>',
-                'created_date' => $domainCreation,
-                'type' => $installationType,
-            	'app_version' => $appVersion,
-                'document_root' => $domainDocumentRoot,
-                'active' => ($domainIsActive ? 'Yes' : 'No')
-            ];
-            $i++;
-        }
-
+    	
         $options = [
             'defaultSortField' => 'active',
             'defaultSortDirection' => pm_View_List_Simple::SORT_DIR_DOWN,
         ];
         $list = new pm_View_List_Simple($this->view, $this->_request, $options);
-        $list->setData($data);
+        $list->setData($this->_getAppInstalations());
         $list->setColumns([
             // pm_View_List_Simple::COLUMN_SELECTION,
             'domain' => [
