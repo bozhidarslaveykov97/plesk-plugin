@@ -6,7 +6,7 @@
 
 class Modules_Microweber_Install {
 
-	protected $_logger;
+protected $_logger;
     protected $_appLatestVersionFolder = false;
     protected $_overwrite = true;
     protected $_domainId;
@@ -136,7 +136,7 @@ class Modules_Microweber_Install {
         	pm_ApiCli::callSbin('rsync_two_dirs.sh', [$this->_appLatestVersionFolder . '/', $domainDocumentRoot]);
         }
         
-        $adminEmail = '1';
+        $adminEmail = 'encrypt@microweber.com';
         $adminPassword = '1';
         $adminUsername = '1';
         
@@ -190,6 +190,8 @@ class Modules_Microweber_Install {
         
         // Repair domain permission
         Modules_Microweber_Config::fixDomainPermissions($domain->getId());
+	   
+	$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $adminEmail]);
         
         Modules_Microweber_WhiteLabel::updateWhiteLabelDomainById($domain->getId());
         
