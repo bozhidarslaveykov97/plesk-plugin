@@ -60,8 +60,13 @@ protected $_logger;
         }
 	    
 	// Add SSL
-	$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $this->_email]);
-        
+	try {
+		$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $this->_email]);
+		$this->_logger->write('Success instalation SSL for domain: ' . $domain->getName());
+	} catch(\Exception $e) {
+		$this->_logger->write('Can\'t install SSL for domain: ' . $domain->getName());
+	}
+	    
         $this->_logger->write('Start installing Microweber on domain: ' . $domain->getName());
         
         $dbName =  str_replace('.', '', $domain->getName());
