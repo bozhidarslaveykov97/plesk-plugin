@@ -65,6 +65,7 @@ protected $_logger;
 		$this->_logger->write('Success instalation SSL for domain: ' . $domain->getName());
 	} catch(\Exception $e) {
 		$this->_logger->write('Can\'t install SSL for domain: ' . $domain->getName());
+		$this->_logger->write('Error: ' . $e->getMessage());
 	}
 	    
         $this->_logger->write('Start installing Microweber on domain: ' . $domain->getName());
