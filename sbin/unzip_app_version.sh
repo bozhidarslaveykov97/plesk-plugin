@@ -31,3 +31,4 @@ rm -rf latest
 chmod 755 -R /usr/share/"$2"/latest
 
 echo "Done!"
+
