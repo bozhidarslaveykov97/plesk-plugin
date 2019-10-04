@@ -4,7 +4,13 @@
 class Modules_Microweber_Domain
 {
 
-	protected static $_excludeDomains = array('microweber.com', 'microweberapi.com');
+	protected static $_excludeDomains = array(
+		'microweber.com', 
+		'microweberapi.com',
+		'microweber.bg',
+		'members.microweber.bg',
+		'web.microweber.bg'
+	);
 	
 	public static function getDomains()
 	{
