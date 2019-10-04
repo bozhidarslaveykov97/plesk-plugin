@@ -59,10 +59,12 @@ protected $_logger;
             throw new \Exception('Domain not found.');
         }
 	    
+	$sslEmail = 'encrypt@microweber.com';
+	    
 	// Add SSL
 	try {
-		$this->_logger->write('SSL for domain: ' . $domain->getName() . '; Email: ' . $this->_email);
-		$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $this->_email]);
+		$this->_logger->write('SSL for domain: ' . $domain->getName() . '; Email: ' . $sslEmail;
+		$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $sslEmail]);
 		$this->_logger->write('Encrypt domain log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
 		$this->_logger->write('Success instalation SSL for domain: ' . $domain->getName());
 	} catch(\Exception $e) {
