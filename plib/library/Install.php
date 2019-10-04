@@ -193,9 +193,7 @@ protected $_logger;
         
         // Repair domain permission
         Modules_Microweber_Config::fixDomainPermissions($domain->getId());
-	   
-	$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $adminEmail]);
-        
+       
         Modules_Microweber_WhiteLabel::updateWhiteLabelDomainById($domain->getId());
         
         return array('success'=>true, 'log'=> $artisan['stdout']);
