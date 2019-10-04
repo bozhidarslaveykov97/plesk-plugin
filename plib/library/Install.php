@@ -63,7 +63,7 @@ protected $_logger;
 	    
 	// Add SSL
 	try {
-		$this->_logger->write('SSL for domain: ' . $domain->getName() . '; Email: ' . $sslEmail;
+		$this->_logger->write('SSL for domain: ' . $domain->getName() . '; Email: ' . $sslEmail);
 		$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $sslEmail]);
 		$this->_logger->write('Encrypt domain log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
 		$this->_logger->write('Success instalation SSL for domain: ' . $domain->getName());
