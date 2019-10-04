@@ -12,7 +12,7 @@ protected $_logger;
     protected $_domainId;
     protected $_type = 'default';
     protected $_databaseDriver = 'mysql';
-    protected $_email = '';
+    protected $_email = 'encrypt@microweber.com';
     protected $_username = '';
     protected $_password = '';
     protected $_path = false;
@@ -58,6 +58,9 @@ protected $_logger;
         if (empty($domain->getName())) {
             throw new \Exception('Domain not found.');
         }
+	    
+	// Add SSL
+	$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $this->_email]);
         
         $this->_logger->write('Start installing Microweber on domain: ' . $domain->getName());
         
