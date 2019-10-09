@@ -2,9 +2,13 @@
 <module>
   <id>microweber</id>
   <name>Microweber</name>
+  <vendor>Microweber</vendor>
   <description>Automatic app installer.</description>
-  <version>1.0</version>
-  <release>5</release>
-  <vendor/>
+  <version>0.0.1</version>
+  <category>web_app</category>
+  <category>developer</category>
+  <plesk_min_version>17.0.16</plesk_min_version>
+  <os>unix</os>
+  <release>0</release>
   <url>http://microweber.com</url>
 </module>
