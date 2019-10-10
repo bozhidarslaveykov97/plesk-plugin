@@ -371,7 +371,7 @@ class IndexController extends pm_Controller_Action {
             	
             	$newInstallation->run();
             	
-            	$this->_status->addMessage('info', 'App is installed successfuly on selected domain.');
+            	$this->_status->addMessage('info', 'App is installed successfully on selected domain.');
             } catch (Exception $e) {
             	
             	// Repair domain permission
@@ -388,7 +388,7 @@ class IndexController extends pm_Controller_Action {
     
     public function checkinstallpathAction() {
     	
-    	$json = array();
+    	$json = [];
     	$json['found_app'] = false;
     	$json['found_thirdparty_app'] = false;
     	
@@ -537,7 +537,7 @@ class IndexController extends pm_Controller_Action {
     private function _getRandomPassword($length = 16)
     {
     	$alphabet = 'ghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-    	$pass = array();
+    	$pass = [];
     	$alphaLength = strlen($alphabet) - 1;
     	for ($i = 0; $i < $length; $i++) {
     		$n = rand(0, $alphaLength);

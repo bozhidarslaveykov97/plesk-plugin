@@ -175,7 +175,7 @@ protected $_logger;
         $whmcsConnector = new Modules_Microweber_WhmcsConnector();
         $whmcsConnector->setDomainName($domainName);
         
-        $installArguments = array();
+        $installArguments = [];
         
         $installArguments[] =  $adminEmail;
         $installArguments[] =  $adminUsername;
@@ -212,7 +212,7 @@ protected $_logger;
     
     private function _getDirsToMake() {
     	
-    	$dirs = array();
+    	$dirs = [];
     	
     	// Storage dirs
     	$dirs[] = 'storage';
@@ -241,7 +241,7 @@ protected $_logger;
     
     private function _getFilesForSymlinking() {
     	
-    	$files = array();
+    	$files = [];
     	
     	$files[] = 'vendor';
     	$files[] = 'src';
@@ -260,7 +260,7 @@ protected $_logger;
      */
     private function _getFilesForCopy() {
     	
-    	$files = array();
+    	$files = [];
     	
     	// Index
     	$files[] = 'version.txt';
@@ -297,7 +297,7 @@ protected $_logger;
     private function _getRandomPassword($length = 16)
     {
     	$alphabet = 'ghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-    	$pass = array();
+    	$pass = [];
     	$alphaLength = strlen($alphabet) - 1;
     	for ($i = 0; $i < $length; $i++) {
     		$n = rand(0, $alphaLength);

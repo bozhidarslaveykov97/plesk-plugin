@@ -23,7 +23,7 @@ class Modules_Microweber_WhiteLabel
 	
 	public static function getWhiteLabelJson()
 	{
-		$whiteLabelSettings = array();
+		$whiteLabelSettings = [];
 		$whiteLabelSettings['brand_name'] = pm_Settings::get('wl_brand_name');
 		$whiteLabelSettings['admin_logo_login_link'] = pm_Settings::get('wl_admin_login_url');
 		$whiteLabelSettings['custom_support_url'] = pm_Settings::get('wl_contact_page');

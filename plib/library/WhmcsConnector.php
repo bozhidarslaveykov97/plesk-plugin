@@ -15,7 +15,7 @@ class Modules_Microweber_WhmcsConnector {
 	
 	public static function updateWhmcsConnector() {
 	
-		$whmcsJson = array();
+		$whmcsJson = [];
 		$whmcsJson['url'] = pm_Settings::get('whmcs_url');
 		$whmcsJson['whmcs_url'] = pm_Settings::get('whmcs_url');
 		
@@ -49,7 +49,7 @@ class Modules_Microweber_WhmcsConnector {
 		return $template;
 	}
 	
-	private function _getJsonFromUrl($url, $postfields = array())
+	private function _getJsonFromUrl($url, $postfields = [])
 	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);

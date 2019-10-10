@@ -31,7 +31,7 @@ class Modules_Microweber_Domain
 			$domains = pm_Domain::getDomainsByClient(pm_Session::getClient());
 		}
 		
-		$readyDomains = array();
+		$readyDomains = [];
 		foreach ($domains as $domain) {
 			if (in_array($domain->getName(), self::$_excludeDomains)) {
 				continue;
