@@ -146,6 +146,8 @@ class Modules_Microweber_Install {
         	pm_ApiCli::callSbin('rsync_two_dirs.sh', [$domain->getSysUserLogin(), $this->_appLatestVersionFolder . '/', $domainDocumentRoot]);
         }
         
+        $this->_fixHtaccess($fileManager, $domainDocumentRoot);
+        
         $adminEmail = 'encrypt@microweber.com';
         $adminPassword = '1';
         $adminUsername = '1';
@@ -186,6 +188,7 @@ class Modules_Microweber_Install {
         $installArguments[] = '-p mw_';
         $installArguments[] = '-t ' . $whmcsConnector->getSelectedTemplate();
         $installArguments[] = '-d 1';
+        
         if (!pm_Session::getClient()->isAdmin()) {
        		$installArguments[] = '-c 1';
         }
@@ -207,6 +210,21 @@ class Modules_Microweber_Install {
         	return array('success'=>false,'error'=>true, 'log'=> $e->getMessage());
         }
         
+    }
+    
+    private function _fixHtaccess($fileManager, $installPath)
+    {
+    	try {
+    		
+    		$content = $fileManager->fileGetContents($installPath . '/.htaccess');
+    		
+    		$content = str_replace('-MultiViews -Indexes', 'FollowSymLinks', $content);
+    		
+    		$fileManager->filePutContents($installPath . '/.htaccess', $content);
+    		
+    	} catch (Exception $e) {
+    		\pm_Log::warn($e);
+    	}
     }
     
     private function _prepairDomainFolder($fileManager, $installPath)
