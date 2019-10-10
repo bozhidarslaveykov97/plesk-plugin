@@ -9,30 +9,17 @@ class Modules_Microweber_EventListener implements EventListener
 {
     public function handleEvent($objectType, $objectId, $action, $oldValue, $newValue)
     {
-    	// https://github.com/plesk/ext-aps-autoprovision/blob/master/src/plib/library/EventListener.php
     	
     	if ($action == 'phys_hosting_create' && pm_Settings::get('installation_settings') == 'auto') {
     		
-    		/*
-    		$newLogger = new Modules_Microweber_Logger();
-    		$newLogger->write('object type ' . print_r($objectType, true));
-    		$newLogger->write('object id' . print_r($objectId, true));
-    		$newLogger->write('action' . print_r($action, true));
-    		$newLogger->write('old value' . print_r($oldValue, true));
-    		$newLogger->write('new value' . print_r($newValue, true));
-    		
-    		$newLogger->write('System User' . print_r($newValue['System User'], true));
-    		$newLogger->write('System User Password' . print_r($newValue['System User Password'], true));
-    		*/
-    		
+
     		$domain = new pm_Domain($objectId);
     		
     		$planItems = $domain->getPlanItems();
     		
     		if (is_array($planItems) && count($planItems) > 0 && isset(Modules_Microweber_Config::getPlanItems()[$planItems[0]])) {
     		
-	    		try {
-	    			
+    			try {
 	    			// Wait to restart web server
 	    			sleep(10);
 	    			

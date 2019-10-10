@@ -40,10 +40,6 @@ class IndexController extends pm_Controller_Action {
         		'title' => 'Settings',
         		'action' => 'settings',
         	];
-        	$this->view->tabs[] = [
-        		'title' => 'Logs',
-        		'action' => 'logs',
-        	];
     	}
     }
 
@@ -53,25 +49,6 @@ class IndexController extends pm_Controller_Action {
     	
         $this->view->pageTitle = $this->_moduleName . ' - Domains';
         $this->view->list = $this->_getDomainsList();
-    }
-    
-    
-    public function logsAction() {
-    	
-    	if (!pm_Session::getClient()->isAdmin()) {
-    		throw new Exception('You don\'t have permissions to see this page.');
-    	}
-    	
-    	$this->_checkAppSettingsIsCorrect();
-    	
-    	$this->view->pageTitle = $this->_moduleName . ' - Logs';
-    	
-    	$logger = new Modules_Microweber_Logger();
-    	
-    	$log =  $logger->read();
-    	
-    	$this->view->log = $log;
-    	
     }
     
     public function versionsAction() {
@@ -350,7 +327,6 @@ class IndexController extends pm_Controller_Action {
             }
             
             try {
-            	
             	$newInstallation = new Modules_Microweber_Install();
             	$newInstallation->setDomainId($post['installation_domain']);
             	$newInstallation->setType($post['installation_type']);
@@ -447,8 +423,8 @@ class IndexController extends pm_Controller_Action {
             'multiOptions' =>
             [
                 'auto' => 'Automaticlly install '.$this->_moduleName.' on new domains creation.',
-            	// 'manual' => 'Allow users to Manualy install '.$this->_moduleName.' from Plesk.',
-                'disabled' => 'Disabled for all users'
+            	'manual' => 'Allow users to Manualy install '.$this->_moduleName.' from Plesk.',
+                'manual' => 'Disabled for all users'
             ],
             'value' => pm_Settings::get('installation_settings'),
             'required' => true,
@@ -607,7 +583,9 @@ class IndexController extends pm_Controller_Action {
     
     private function _getCurrentVersionLastDownloadDateTime()
     {
-    	$version_file = file_exists($this->_getSharedFolderPath() . 'version.txt');
+    	$manager = new pm_ServerFileManager();
+    	
+    	$version_file = $manager->fileExists($this->_getSharedFolderPath() . 'version.txt');
     	if ($version_file) {
     		$version = filectime($this->_getSharedFolderPath() . 'version.txt');
     		if ($version) {
@@ -617,13 +595,16 @@ class IndexController extends pm_Controller_Action {
     }
     private function _getCurrentVersion()
     {
-    	$versionFile = file_exists($this->_getSharedFolderPath() . 'version.txt');
+    	$manager = new pm_ServerFileManager();
+    	
+    	$versionFile = $manager->fileExists($this->_getSharedFolderPath() . 'version.txt');
     	
     	$version = 'unknown';
     	if ($versionFile) {
-    		$version = file_get_contents($this->_getSharedFolderPath() . 'version.txt');
+    		$version = $manager->fileGetContents($this->_getSharedFolderPath() . 'version.txt');
     		$version = strip_tags($version);
     	}
+    	
     	return $version;
     }
 	

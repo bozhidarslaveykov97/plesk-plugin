@@ -1,12 +1,7 @@
 <?php
 
-/*
- * https://docs.plesk.com/en-US/onyx/api-rpc/about-xml-api/reference/managing-databases/creating-database-users/creating-multiple-database-users.34472/#creating-a-database-user
- */
-
 class Modules_Microweber_Install {
 
-protected $_logger;
     protected $_appLatestVersionFolder = false;
     protected $_overwrite = true;
     protected $_domainId;
@@ -18,8 +13,6 @@ protected $_logger;
     protected $_path = false;
     
     public function __construct() {
-    	
-    	$this->_logger = new Modules_Microweber_Logger();
     	$this->_appLatestVersionFolder = Modules_Microweber_Config::getAppLatestVersionFolder();
     }
     
@@ -59,20 +52,22 @@ protected $_logger;
             throw new \Exception('Domain not found.');
         }
 	    
-	$sslEmail = 'encrypt@microweber.com';
+        $fileManager = new \pm_FileManager($domain->getId());
+        
+		$sslEmail = 'encrypt@microweber.com';
+		    
+		// Add SSL
+		try {
+			pm_Log::debug('Start installign SSL for domain: ' . $domain->getName() . '; SSL Email: ' . $sslEmail);
+			$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $sslEmail]);
+			pm_Log::debug('Encrypt domain log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
+			pm_Log::debug('Success instalation SSL for domain: ' . $domain->getName());
+		} catch(\Exception $e) {
+			pm_Log::debug('Can\'t install SSL for domain: ' . $domain->getName());
+			pm_Log::debug('Error: ' . $e->getMessage());
+		}
 	    
-	// Add SSL
-	try {
-		$this->_logger->write('SSL for domain: ' . $domain->getName() . '; Email: ' . $sslEmail);
-		$artisan = pm_ApiCli::callSbin('encrypt_domain.sh', [$domain->getName(), $sslEmail]);
-		$this->_logger->write('Encrypt domain log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
-		$this->_logger->write('Success instalation SSL for domain: ' . $domain->getName());
-	} catch(\Exception $e) {
-		$this->_logger->write('Can\'t install SSL for domain: ' . $domain->getName());
-		$this->_logger->write('Error: ' . $e->getMessage());
-	}
-	    
-        $this->_logger->write('Start installing Microweber on domain: ' . $domain->getName());
+        pm_Log::debug('Start installing Microweber on domain: ' . $domain->getName());
         
         $dbName =  str_replace('.', '', $domain->getName());
         $dbName = substr($dbName, 0, 9);
@@ -82,7 +77,7 @@ protected $_logger;
         
         if ($this->_databaseDriver == 'mysql') {
         	
-        	$this->_logger->write('Create database for domain: ' . $domain->getName());
+        	pm_Log::debug('Create database for domain: ' . $domain->getName());
         	
 	        $dbManager = new Modules_Microweber_DatabaseManager();
 	        $dbManager->setDomainId($domain->getId());
@@ -120,16 +115,16 @@ protected $_logger;
         $domainIsActive = $domain->isActive();
         $domainCreation = $domain->getProperty('cr_date');
         
-        $this->_logger->write('Clear old folder on domain: ' . $domain->getName());
+        pm_Log::debug('Clear old folder on domain: ' . $domain->getName());
         
         // Clear domain files if exists
-        pm_ApiCli::callSbin('prepair_domain_folder.sh', [$domainDocumentRoot]);
-       	
+        $this->_prepairDomainFolder($fileManager, $domainDocumentRoot);
+
         if ($this->_type == 'symlink') {
         	
         	// First we will make a directories
         	foreach ($this->_getDirsToMake() as $dir) {
-        		pm_ApiCli::callSbin('create_dir.sh', [$domainDocumentRoot . '/' . $dir]);
+        		$fileManager->mkdir($domainDocumentRoot . '/' . $dir);
         	}
         	
         	foreach ($this->_getFilesForSymlinking() as $folder) {
@@ -137,14 +132,16 @@ protected $_logger;
         		$scriptDirOrFile = $this->_appLatestVersionFolder . '/' . $folder;
         		$domainDirOrFile = $domainDocumentRoot .'/'. $folder;
         		
-        		$result = pm_ApiCli::callSbin('create_symlink.sh', [$scriptDirOrFile, $domainDirOrFile], pm_ApiCli::RESULT_FULL);
+        		$result = pm_ApiCli::callSbin('create_symlink.sh', [$domain->getSysUserLogin(), $scriptDirOrFile, $domainDirOrFile], pm_ApiCli::RESULT_FULL);
         		
         	}
         	
         	// And then we will copy files
         	foreach ($this->_getFilesForCopy() as $file) {
-        		pm_ApiCli::callSbin('copy_file.sh', [$this->_appLatestVersionFolder . '/' . $file, $domainDocumentRoot . '/' . $file]);
+        		$fileManager->copyFile($this->_appLatestVersionFolder . '/' . $file, $domainDocumentRoot . '/' . $file);
         	}
+        	
+        	
         } else {
         	pm_ApiCli::callSbin('rsync_two_dirs.sh', [$this->_appLatestVersionFolder . '/', $domainDocumentRoot]);
         }
@@ -199,7 +196,7 @@ protected $_logger;
         
         $artisan = pm_ApiCli::callSbin('run_php.sh', [$command]);  
       	
-        $this->_logger->write('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
+        pm_Log::debug('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
         
         // Repair domain permission
         Modules_Microweber_Config::fixDomainPermissions($domain->getId());
@@ -208,6 +205,34 @@ protected $_logger;
         
         return array('success'=>true, 'log'=> $artisan['stdout']);
         
+    }
+    
+    private function _prepairDomainFolder($fileManager, $installPath)
+    {
+    	try {
+    		$findedFiles = [];
+    		foreach ($fileManager->scanDir($installPath) as $file) {
+    			if ($file == '.' || $file == '..') {
+    				continue;
+    			}
+    			$findedFiles[] = $file;
+    		}
+    		
+    		if (!empty($findedFiles)) {
+    			// Make backup dir
+    			$backupDir = $installPath . '/backup-files-' . date('Y-m-d-H-i-s');
+    			$fileManager->mkdir($backupDir);
+    			
+    			// Move files to backup dir
+    			foreach ($findedFiles as $file) {
+    				$fileManager->moveFile($installPath . '/' . $file, $backupDir . '/' . $file);
+    			}
+    		}
+    		
+    	} catch (Exception $e) {
+    		\pm_Log::warn($e);
+    	}
+    	
     }
     
     private function _getDirsToMake() {

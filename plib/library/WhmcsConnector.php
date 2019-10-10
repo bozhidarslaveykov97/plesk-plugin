@@ -2,14 +2,7 @@
 
 class Modules_Microweber_WhmcsConnector
 {
-
-    protected $_logger;
     protected $_domainName;
-
-    public function __construct()
-    {
-        $this->_logger = new Modules_Microweber_Logger();
-    }
 
     public function setDomainName($name)
     {
@@ -26,21 +19,16 @@ class Modules_Microweber_WhmcsConnector
         $whmcsJson = json_encode($whmcsJson, JSON_PRETTY_PRINT);
 
         $whmFilePath = Modules_Microweber_Config::getAppLatestVersionFolder() . '/userfiles/modules/whmcs_connector/settings.json';
-        $whmFilePathCache = pm_ProductInfo::getPrivateTempDir() . '/whmcs_connector_settings_cache.json';
-
-        file_put_contents($whmFilePathCache, $whmcsJson);
-
-        var_dump($whmFilePathCache);
-        var_dump($whmFilePath);
-        die();
-        pm_ApiCli::callSbin('copy_file.sh', [$whmFilePathCache, $whmFilePath]);
-
+       
+        $manager = new pm_ServerFileManager();
+        $manager->filePutContents($whmFilePath, $whmcsJson);
+        
     }
 
     public function getSelectedTemplate()
     {
 
-        $this->_logger->write('Get selected template for domain: ' . $this->_domainName);
+        pm_Log::debug('Get selected template for domain: ' . $this->_domainName);
 
         $template = 'dream';
 
@@ -48,7 +36,7 @@ class Modules_Microweber_WhmcsConnector
 
         $json = $this->_getJsonFromUrl($url);
 
-        $this->_logger->write('Recived json for domain: ' . $this->_domainName . print_r($json, true));
+        pm_Log::debug('Recived json for domain: ' . $this->_domainName . print_r($json, true));
 
         if (isset($json['template'])) {
             $template = $json['template'];
