@@ -143,7 +143,7 @@ class Modules_Microweber_Install {
         	
         	
         } else {
-        	pm_ApiCli::callSbin('rsync_two_dirs.sh', [$this->_appLatestVersionFolder . '/', $domainDocumentRoot]);
+        	pm_ApiCli::callSbin('rsync_two_dirs.sh', [$domain->getSysUserLogin(), $this->_appLatestVersionFolder . '/', $domainDocumentRoot]);
         }
         
         $adminEmail = 'encrypt@microweber.com';
@@ -194,10 +194,10 @@ class Modules_Microweber_Install {
 		
         $command = $domainDocumentRoot . '/artisan microweber:install ' . $installArguments;
         
-        $artisan = pm_ApiCli::callSbin('run_php.sh', [$command]);  
+        $artisan = pm_ApiCli::callSbin($domain->getSysUserLogin(), 'run_php.sh', [$command]);  
       	
         pm_Log::debug('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
-       
+        
         Modules_Microweber_WhiteLabel::updateWhiteLabelDomainById($domain->getId());
         
         return array('success'=>true, 'log'=> $artisan['stdout']);

@@ -349,10 +349,6 @@ class IndexController extends pm_Controller_Action {
             	
             	$this->_status->addMessage('info', 'App is installed successfully on selected domain.');
             } catch (Exception $e) {
-            	
-            	// Repair domain permission
-            	Modules_Microweber_Config::fixDomainPermissions($post['installation_domain']);
-            	
             	$this->_status->addMessage('error', $e->getMessage());
             }
             

@@ -39,16 +39,4 @@ class Modules_Microweber_Config
 		return $updateWhmcsUrl;
 	}
 	
-	public static function fixDomainPermissions($domainId) {
-		
-		$domain = pm_Domain::getByDomainId($domainId);
-		
-		if (!empty($domain->getName())) {
-			
-			// Repair domain permission
-			pm_ApiCli::callSbin('repair_domain_permissions.sh', [$domain->getName()], pm_ApiCli::RESULT_FULL);
-			
-		}
-		
-	}
 }
