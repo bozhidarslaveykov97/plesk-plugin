@@ -558,7 +558,7 @@ class IndexController extends pm_Controller_Action {
     	
     	// Whm Connector
     	$downloadUrl = 'https://github.com/microweber-dev/whmcs-connector/archive/master.zip';
-    	$downloadLogModules = pm_ApiCli::callSbin('unzip_app_modules.sh',[base64_encode($downloadUrl), $this->_getSharedFolderAppName()])['stdout'];
+        $downloadLog .= pm_ApiCli::callSbin('unzip_app_modules.sh',[base64_encode($downloadUrl), $this->_getSharedFolderAppName()])['stdout'];
     	
     	Modules_Microweber_WhmcsConnector::updateWhmcsConnector();
     	

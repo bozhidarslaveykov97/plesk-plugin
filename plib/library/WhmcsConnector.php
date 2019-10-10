@@ -30,6 +30,9 @@ class Modules_Microweber_WhmcsConnector
 
         file_put_contents($whmFilePathCache, $whmcsJson);
 
+        var_dump($whmFilePathCache);
+        var_dump($whmFilePath);
+        die();
         pm_ApiCli::callSbin('copy_file.sh', [$whmFilePathCache, $whmFilePath]);
 
     }
