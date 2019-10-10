@@ -193,14 +193,19 @@ class Modules_Microweber_Install {
         $installArguments = implode(' ', $installArguments);
 		
         $command = $domainDocumentRoot . '/artisan microweber:install ' . $installArguments;
-        
-        $artisan = pm_ApiCli::callSbin($domain->getSysUserLogin(), 'run_php.sh', [$command]);  
-      	
-        pm_Log::debug('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
-        
-        Modules_Microweber_WhiteLabel::updateWhiteLabelDomainById($domain->getId());
-        
-        return array('success'=>true, 'log'=> $artisan['stdout']);
+		
+        try {
+        	$artisan = pm_ApiCli::callSbin('run_php.sh', [$domain->getSysUserLogin(), $command]);  
+ 
+        	pm_Log::debug('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
+        	
+        	Modules_Microweber_WhiteLabel::updateWhiteLabelDomainById($domain->getId());
+        	
+        	return array('success'=>true, 'log'=> $artisan['stdout']);
+        	
+        } catch (Exception $e) {
+        	return array('success'=>false,'error'=>true, 'log'=> $e->getMessage());
+        }
         
     }
     
