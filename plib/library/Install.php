@@ -197,9 +197,6 @@ class Modules_Microweber_Install {
         $artisan = pm_ApiCli::callSbin('run_php.sh', [$command]);  
       	
         pm_Log::debug('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
-        
-        // Repair domain permission
-        Modules_Microweber_Config::fixDomainPermissions($domain->getId());
        
         Modules_Microweber_WhiteLabel::updateWhiteLabelDomainById($domain->getId());
         
