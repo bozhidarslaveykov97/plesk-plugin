@@ -1,12 +1,6 @@
 #!/bin/bash -e
 
-username=`whoami`
-if [ "$username" != "root" ]; then
-    echo "Please run this script as root";
-    exit 1
-fi
+sudo -u $1 bash -c "rm -rf $3"
+sudo -u $1 bash -c "ln -s $2 $3"
 
-rm -rf $2
-ln -s $1 $2
-
-exit 0
+chown -h $1:psacln $3
