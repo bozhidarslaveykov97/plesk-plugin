@@ -63,9 +63,6 @@ class Modules_Microweber_WhmcsConnector {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		
-		curl_setopt($curl, CURLOPT_VERBOSE, true);
-		curl_setopt($curl, CURLOPT_STDERR, $out);  
-		
 		$data = curl_exec($ch);
 		
 		curl_close($ch);

@@ -43,21 +43,6 @@ APICALL;
 		
 	}
 	
-	public function getAllDatabases() {
-		
-		$apiRequest = <<<APICALL
-<packet>
-	<database>
-		<get-db>
-			<filter></filter>
-		</get-db>
-	</database>
-</packet>
-APICALL;
-		
-		return $this->_makeRequest($apiRequest);
-	}
-	
 	protected function _makeRequest($apiRequest) {
 		
 		if (empty($this->_domainId)) {

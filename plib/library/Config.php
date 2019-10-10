@@ -46,7 +46,7 @@ class Modules_Microweber_Config
 		if (!empty($domain->getName())) {
 			
 			// Repair domain permission
-			pm_ApiCli::callSbin('repair_domain_permissions.sh', [$domainName], pm_ApiCli::RESULT_FULL);
+			pm_ApiCli::callSbin('repair_domain_permissions.sh', [$domain->getName()], pm_ApiCli::RESULT_FULL);
 			
 		}
 		
