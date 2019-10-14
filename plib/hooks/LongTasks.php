@@ -1,6 +1,6 @@
 <?php
 
-class Modules_Microweber_LongTasks extends pm_Hook_LongTasks
+class Modules_Microweber_LongTasks extends \pm_Hook_LongTasks
 {
 
 	public function getLongTasks()
@@ -8,7 +8,7 @@ class Modules_Microweber_LongTasks extends pm_Hook_LongTasks
 		pm_Log::info('getLongTasks.');
 
 		return [
-			new Modules_Microweber_Task_Install()
+			new Modules_Microweber_TaskInstall()
 		];
 	}
 }

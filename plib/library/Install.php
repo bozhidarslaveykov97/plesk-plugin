@@ -11,9 +11,20 @@ class Modules_Microweber_Install {
     protected $_username = '';
     protected $_password = '';
     protected $_path = false;
+    protected $_progressLogger = false;
     
     public function __construct() {
     	$this->_appLatestVersionFolder = Modules_Microweber_Config::getAppLatestVersionFolder();
+    }
+    
+    public function setProgressLogger($logger) {
+    	$this->_progressLogger = $logger;
+    }
+    
+    public function setProgress($progress) {
+    	if (is_object($this->_progressLogger) && method_exists($this->_progressLogger, 'updateProgress')) {
+    		$this->_progressLogger->updateProgress($progress);
+    	}
     }
     
     public function setPath($path) {
@@ -45,16 +56,20 @@ class Modules_Microweber_Install {
     }
 
     public function run() {
-        
+    	
+    	$this->setProgress(5);
+    	
     	$domain = Modules_Microweber_Domain::getUserDomainById($this->_domainId);
         
         if (empty($domain->getName())) {
             throw new \Exception('Domain not found.');
         }
 	    
+        $this->setProgress(10);
+        
         $fileManager = new \pm_FileManager($domain->getId());
         
-		$sslEmail = 'encrypt@microweber.com';
+		$sslEmail = 'admin@microweber.com';
 		    
 		// Add SSL
 		try {
@@ -66,6 +81,8 @@ class Modules_Microweber_Install {
 			pm_Log::debug('Can\'t install SSL for domain: ' . $domain->getName());
 			pm_Log::debug('Error: ' . $e->getMessage());
 		}
+		
+		$this->setProgress(20);
 	    
         pm_Log::debug('Start installing Microweber on domain: ' . $domain->getName());
         
@@ -73,7 +90,7 @@ class Modules_Microweber_Install {
         $dbName = substr($dbName, 0, 9);
         $dbName .= '_'.date('His');  
         $dbUsername = $dbName;
-        $dbPassword = $this->_getRandomPassword(12);
+        $dbPassword = Modules_Microweber_Helper::getRandomPassword(12, true);
         
         if ($this->_databaseDriver == 'mysql') {
         	
@@ -83,10 +100,12 @@ class Modules_Microweber_Install {
 	        $dbManager->setDomainId($domain->getId());
 	
 	        $newDb = $dbManager->createDatabase($dbName);
-	
+	        
 	        if (isset($newDb['database']['add-db']['result']['errtext'])) {
 	            throw new \Exception($newDb['database']['add-db']['result']['errtext']);
 	        }
+	        
+	        $this->setProgress(30);
 	
 	        if (isset($newDb['database']['add-db']['result']['id'])) {
 	            $dbId = $newDb['database']['add-db']['result']['id'];
@@ -99,12 +118,14 @@ class Modules_Microweber_Install {
 	        if ($dbId) {
 	        	$newUser = $dbManager->createUser($dbId, $dbUsername, $dbPassword);
 	        }
-	
+			
 	        if (isset($newUser['database']['add-db-user']['result']['errtext'])) {
 	            throw new \Exception($newUser['database']['add-db-user']['result']['errtext']);
 	        }
+	        
+	        $this->setProgress(40);
         }
-
+        
         $domainDocumentRoot = $domain->getDocumentRoot(); 
         
         if ($this->_path) {
@@ -119,13 +140,17 @@ class Modules_Microweber_Install {
         
         // Clear domain files if exists
         $this->_prepairDomainFolder($fileManager, $domainDocumentRoot);
-
+        
+        $this->setProgress(60);
+       	
         if ($this->_type == 'symlink') {
         	
         	// First we will make a directories
         	foreach ($this->_getDirsToMake() as $dir) {
-        		$fileManager->mkdir($domainDocumentRoot . '/' . $dir);
+        		$fileManager->mkdir($domainDocumentRoot . '/' . $dir, '0755', true);
         	}
+        	
+        	$this->setProgress(65);
         	
         	foreach ($this->_getFilesForSymlinking() as $folder) {
         		
@@ -136,19 +161,28 @@ class Modules_Microweber_Install {
         		
         	}
         	
+        	$this->setProgress(70);
+        	
         	// And then we will copy files
         	foreach ($this->_getFilesForCopy() as $file) {
         		$fileManager->copyFile($this->_appLatestVersionFolder . '/' . $file, $domainDocumentRoot . '/' . $file);
         	}
         	
+        	$this->setProgress(75);
         	
         } else {
         	pm_ApiCli::callSbin('rsync_two_dirs.sh', [$domain->getSysUserLogin(), $this->_appLatestVersionFolder . '/', $domainDocumentRoot]);
+        	$this->setProgress(65);
         }
+        
+        $this->setProgress(80);
         
         $this->_fixHtaccess($fileManager, $domainDocumentRoot);
         
-        $adminEmail = 'encrypt@microweber.com';
+        $this->setProgress(85);
+        
+        
+        $adminEmail = 'admin@microweber.com';
         $adminPassword = '1';
         $adminUsername = '1';
         
@@ -173,6 +207,8 @@ class Modules_Microweber_Install {
         
         $whmcsConnector = new Modules_Microweber_WhmcsConnector();
         $whmcsConnector->setDomainName($domainName);
+        
+        $this->setProgress(90);
         
         $installArguments = [];
         
@@ -199,6 +235,8 @@ class Modules_Microweber_Install {
 		
         try {
         	$artisan = pm_ApiCli::callSbin('run_php.sh', [$domain->getSysUserLogin(), $command]);  
+        	
+        	$this->setProgress(95);
  
         	pm_Log::debug('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
         	
@@ -337,18 +375,6 @@ class Modules_Microweber_Install {
     	$files[] = 'bootstrap/autoload.php';
     	
     	return $files;
-    }
-    
-    private function _getRandomPassword($length = 16)
-    {
-    	$alphabet = 'ghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-    	$pass = [];
-    	$alphaLength = strlen($alphabet) - 1;
-    	for ($i = 0; $i < $length; $i++) {
-    		$n = rand(0, $alphaLength);
-    		$pass[] = $alphabet[$n];
-    	}
-    	return implode($pass);
     }
     
 }

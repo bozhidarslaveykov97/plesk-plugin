@@ -14,8 +14,6 @@ class IndexController extends pm_Controller_Action {
     	
         parent::init();
         
-        pm_Settings::set('readyToStop', false);
-        
         if (is_null($this->taskManager)) {
         	$this->taskManager = new pm_LongTask_Manager();
         }
@@ -299,7 +297,7 @@ class IndexController extends pm_Controller_Action {
         
         $adminUsername = 'mw_' . $this->_getRandomPassword(9);
         $adminEmail = $adminUsername . '@' . $httpHost;
-        $adminPassword = $this->_getRandomPassword(12);
+        $adminPassword = $this->_getRandomPassword(12, true);
         
         $form->addElement('text', 'installation_email', [
         	'label' => 'Admin Email',
@@ -334,55 +332,54 @@ class IndexController extends pm_Controller_Action {
             	$this->_helper->json(['redirect' => pm_Context::getBaseUrl(). 'index.php/index/index']);
             }
             
-            $domain = new pm_Domain($post['installation_domain']);
-           	
+			$domain = new pm_Domain($post['installation_domain']);
             if (!empty($domain->getName())) {
             	
-            	$task = new Modules_Microweber_Task_Install();
+            	$task = new Modules_Microweber_TaskInstall();
+            	$task->setParam('domainId', $domain->getId());
             	$task->setParam('domainName', $domain->getName());
-            	$task->setParams([
-            		'p1' => 1,
-            		'p2' => 2,
-            	]);
-            	$task->setParam('p3', 3);  
+            	$task->setParam('type', $post['installation_type']); 
+            	$task->setParam('databaseDriver', $post['installation_database_driver']);
+            	$task->setParam('path', $post['installation_folder']);
+            	$task->setParam('email', $post['installation_email']);
+            	$task->setParam('username', $post['installation_username']);
+            	$task->setParam('password', $post['installation_password']);
             	
-            	$x = $this->taskManager->start($task, $domain);
+            	if (pm_Session::getClient()->isAdmin()) {
+            		// Run global
+            		$this->taskManager->start($task, NULL);
+            	} else {
+            		// Run for domain
+            		$this->taskManager->start($task, $domain);
+            	}
             	
-            	//$this->_helper->json(['redirect' => pm_Context::getBaseUrl(). 'index.php/index/index']);
+            	$this->_helper->json(['redirect' => pm_Context::getBaseUrl(). 'index.php/index/index']);
             	
-            	echo 'task start';
-            	die();
             } else {
             	echo 'Please, select domain.';
             	exit;
             }
             
             /*
-            try {
-            	$newInstallation = new Modules_Microweber_Install();
-            	$newInstallation->setDomainId($post['installation_domain']);
-            	$newInstallation->setType($post['installation_type']);
-            	$newInstallation->setDatabaseDriver($post['installation_database_driver']);
-            	$newInstallation->setPath($post['installation_folder']);
-            	
-            	if (!empty($post['installation_email'])) {
-            		$newInstallation->setEmail($post['installation_email']);
-            	}
-            	
-            	if (!empty($post['installation_username'])) {
-            		$newInstallation->setUsername($post['installation_username']);
-            	}
-            	
-            	if (!empty($post['installation_password'])) {
-            		$newInstallation->setPassword($post['installation_password']);
-            	}
-            	
-            	$newInstallation->run();
-            	
-            	$this->_status->addMessage('info', 'App is installed successfully on selected domain.');
-            } catch (Exception $e) {
-            	$this->_status->addMessage('error', $e->getMessage());
+            $newInstallation = new Modules_Microweber_Install();
+            $newInstallation->setDomainId($post['installation_domain']);
+            $newInstallation->setType($post['installation_type']);
+            $newInstallation->setDatabaseDriver($post['installation_database_driver']);
+            $newInstallation->setPath($post['installation_folder']);
+            
+            if (!empty($post['installation_email'])) {
+            	$newInstallation->setEmail($post['installation_email']);
             }
+            
+            if (!empty($post['installation_username'])) {
+            	$newInstallation->setUsername($post['installation_username']);
+            }
+            
+            if (!empty($post['installation_password'])) {
+            	$newInstallation->setPassword($post['installation_password']);
+            }
+            
+            $newInstallation->run(); 
             */
             
         }
@@ -427,12 +424,11 @@ class IndexController extends pm_Controller_Action {
     		}
     		
     		$json['domain_found'] = true;
-    	} catch (Exception $e) {
     		
+    	} catch (Exception $e) {
     		$json['error'] = $e->getMessage();
     		$json['domain_found'] = false;
     	}
-    	
     	
     	die(json_encode($json, JSON_PRETTY_PRINT));
     }
@@ -538,9 +534,14 @@ class IndexController extends pm_Controller_Action {
         $this->view->form = $form;
     }
     
-    private function _getRandomPassword($length = 16)
+    private function _getRandomPassword($length = 16, $complex = false)
     {
-    	$alphabet = 'ghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    	$alphabet = 'ghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    	
+    	if ($complex) {
+    		$alphabet .='-=~!@#$%^&*()_+,./<>?;:[]{}\|';
+    	}
+    	
     	$pass = [];
     	$alphaLength = strlen($alphabet) - 1;
     	for ($i = 0; $i < $length; $i++) {
@@ -673,6 +674,10 @@ class IndexController extends pm_Controller_Action {
     		if (!empty($installationsFind)) {
     			
     			foreach ($installationsFind as $appInstallationConfig) {
+    				
+    				if (strpos($appInstallationConfig, 'backup-files') !== false) {
+    					continue;
+    				}
     				
     				$appInstallation = str_replace('/config/microweber.php', false, $appInstallationConfig);
     				
