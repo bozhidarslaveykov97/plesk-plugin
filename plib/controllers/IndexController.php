@@ -681,17 +681,20 @@ class IndexController extends pm_Controller_Action {
     				
     				$appInstallation = str_replace('/config/microweber.php', false, $appInstallationConfig);
     				
+    				/*
 		    		// Find app in main folder
     				if ($fileManager->fileExists($appInstallation . '/version.txt')) {
     					$appVersion = $fileManager->fileGetContents($appInstallation . '/version.txt');
 		    		}
-		    		
+		    		*/
+		    		/*
 		    		if (is_link($appInstallation . '/vendor')) {
 		    			$installationType = 'Symlinked';
 		    		} else {
 		    			$installationType = 'Standalone';
 		    		}
-		    		
+		    		*/
+    				
 		    		$domainNameUrl = $appInstallation;
 		    		$domainNameUrl = str_replace('/var/www/vhosts/', false, $domainNameUrl);
 		    		$domainNameUrl = str_replace($domainName . '/httpdocs', $domainName, $domainNameUrl);
