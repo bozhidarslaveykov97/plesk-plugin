@@ -12,7 +12,7 @@ class Modules_Microweber_Domain
 		'web.microweber.bg'
 	);
 	
-	public static function getDomains($page = 0, $limit = 100)
+	public static function getDomains()
 	{
 		$httpHost = '';
 		if (isset($_SERVER['HTTP_HOST'])) {
@@ -30,8 +30,6 @@ class Modules_Microweber_Domain
 		} else {
 			$domains = pm_Domain::getDomainsByClient(pm_Session::getClient());
 		}
-		
-		$domains = array_slice($domains, $page * $limit, $limit);
 		
 		$readyDomains = [];
 		foreach ($domains as $domain) {

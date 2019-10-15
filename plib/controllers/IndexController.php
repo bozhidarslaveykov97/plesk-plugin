@@ -652,12 +652,14 @@ class IndexController extends pm_Controller_Action {
     	return $sharedFolderAppName;
     }
     
-    private function _getAppInstalations($page, $limit) {
+    private function _getAppInstalations() {
     	
     	$data = [];
     	
-    	foreach (Modules_Microweber_Domain::getDomains($page, $limit) as $domain) {
+    	foreach (Modules_Microweber_Domain::getDomains() as $domain) {
     		
+			$installationsFind = array();
+			
     		$domainDocumentRoot = $domain->getDocumentRoot();
     		$domainName = $domain->getName();
     		$domainIsActive = $domain->isActive();
@@ -667,19 +669,33 @@ class IndexController extends pm_Controller_Action {
     		$installationType = 'unknown';
     		
     		$fileManager = new pm_FileManager($domain->getId());
-    		
-    		$installationsFind = $fileManager->find(['microweber.php'], true);
-    		
+			
+    		$allDirs = $fileManager->scanDir($domainDocumentRoot, true);
+    		foreach($allDirs as $dir) {
+				if (!is_dir($domainDocumentRoot .'/'. $dir .'/config/')) {
+					continue;
+				}
+				if (is_file($domainDocumentRoot .'/'. $dir. '/config/microweber.php')) {
+					$installationsFind[] = $domainDocumentRoot .'/'. $dir. '/config/microweber.php';
+				}
+			}
+			
+			if (is_dir($domainDocumentRoot .'/config/')) {
+				if (is_file($domainDocumentRoot .'/config/microweber.php')) {
+					$installationsFind[] = $domainDocumentRoot .'/config/microweber.php';
+				}
+			}
+			
     		if (!empty($installationsFind)) {
     			
     			foreach ($installationsFind as $appInstallationConfig) {
-    				
+					
     				if (strpos($appInstallationConfig, 'backup-files') !== false) {
     					continue;
     				}
-    				
-    				$appInstallation = str_replace('/config/microweber.php', false, $appInstallationConfig);
-    				
+					
+					$appInstallation = str_replace('/config/microweber.php', false, $appInstallationConfig);
+					
 		    		// Find app in main folder
     				if ($fileManager->fileExists($appInstallation . '/version.txt')) {
     					$appVersion = $fileManager->fileGetContents($appInstallation . '/version.txt');
@@ -690,7 +706,7 @@ class IndexController extends pm_Controller_Action {
 		    		} else {
 		    			$installationType = 'Standalone';
 		    		}
-    				
+					
 		    		$domainNameUrl = $appInstallation;
 		    		$domainNameUrl = str_replace('/var/www/vhosts/', false, $domainNameUrl);
 		    		$domainNameUrl = str_replace($domainName . '/httpdocs', $domainName, $domainNameUrl);
@@ -715,13 +731,12 @@ class IndexController extends pm_Controller_Action {
     	
         $options = [
         	'pageable' => true,
-        	'defaultItemsPerPage' => 10,
             'defaultSortField' => 'active',
             'defaultSortDirection' => pm_View_List_Simple::SORT_DIR_DOWN,
         ];
         
         $list = new pm_View_List_Simple($this->view, $this->_request, $options);
-        $list->setData($this->_getAppInstalations($this->_request->page, 10));
+        $list->setData($this->_getAppInstalations());
         $list->setColumns([
             // pm_View_List_Simple::COLUMN_SELECTION,
             'domain' => [
@@ -766,7 +781,6 @@ class IndexController extends pm_Controller_Action {
     {
     	$list = $this->_getDomainsList();
     	
-    	// Json data from pm_View_List_Simple
     	$this->_helper->json($list->fetchData());
     }
     
