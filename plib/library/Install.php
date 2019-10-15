@@ -234,15 +234,10 @@ class Modules_Microweber_Install {
         $installArguments = implode(' ', $installArguments);
 		
         $command = $domainDocumentRoot . '/artisan microweber:install ' . $installArguments;
-		
-		$artisan = pm_ApiCli::callSbin('run_php.sh', [$domain->getSysUserLogin(), $command]);  
-			
-		var_dump($command);
-		var_dump($artisan);
-		die();
-		
-		
+	
         try { 
+		$artisan = pm_ApiCli::callSbin('run_php.sh', [$domain->getSysUserLogin(), $command]);  
+
         	$this->setProgress(95);
  
         	pm_Log::debug('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
