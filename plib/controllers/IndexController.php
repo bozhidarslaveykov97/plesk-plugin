@@ -652,12 +652,11 @@ class IndexController extends pm_Controller_Action {
     	return $sharedFolderAppName;
     }
     
-    private function _getAppInstalations() {
+    private function _getAppInstalations($page, $limit) {
     	
     	$data = [];
     	
-    	$i = 0;
-    	foreach (Modules_Microweber_Domain::getDomains() as $domain) {
+    	foreach (Modules_Microweber_Domain::getDomains($page, $limit) as $domain) {
     		
     		$domainDocumentRoot = $domain->getDocumentRoot();
     		$domainName = $domain->getName();
@@ -681,25 +680,22 @@ class IndexController extends pm_Controller_Action {
     				
     				$appInstallation = str_replace('/config/microweber.php', false, $appInstallationConfig);
     				
-    				/*
 		    		// Find app in main folder
     				if ($fileManager->fileExists($appInstallation . '/version.txt')) {
     					$appVersion = $fileManager->fileGetContents($appInstallation . '/version.txt');
 		    		}
-		    		*/
-		    		/*
+		    		
 		    		if (is_link($appInstallation . '/vendor')) {
 		    			$installationType = 'Symlinked';
 		    		} else {
 		    			$installationType = 'Standalone';
 		    		}
-		    		*/
     				
 		    		$domainNameUrl = $appInstallation;
 		    		$domainNameUrl = str_replace('/var/www/vhosts/', false, $domainNameUrl);
 		    		$domainNameUrl = str_replace($domainName . '/httpdocs', $domainName, $domainNameUrl);
 		    		
-		    		$data[$i] = [
+		    		$data[] = [
 		    			'domain' => '<a href="http://'.$domainNameUrl.'" target="_blank">' . $domainNameUrl . '</a>',
 		    			'created_date' => $domainCreation,
 		    			'type' => $installationType,
@@ -707,7 +703,7 @@ class IndexController extends pm_Controller_Action {
 		    			'document_root' => $appInstallation,
 		    			'active' => ($domainIsActive ? 'Yes' : 'No')
 		    		];
-		    		$i++;
+		    		
     			}
     		}
     	}
@@ -718,11 +714,14 @@ class IndexController extends pm_Controller_Action {
     private function _getDomainsList() {
     	
         $options = [
+        	'pageable' => true,
+        	'defaultItemsPerPage' => 10,
             'defaultSortField' => 'active',
             'defaultSortDirection' => pm_View_List_Simple::SORT_DIR_DOWN,
         ];
+        
         $list = new pm_View_List_Simple($this->view, $this->_request, $options);
-        $list->setData($this->_getAppInstalations());
+        $list->setData($this->_getAppInstalations($this->_request->page, 10));
         $list->setColumns([
             // pm_View_List_Simple::COLUMN_SELECTION,
             'domain' => [
@@ -761,6 +760,14 @@ class IndexController extends pm_Controller_Action {
         $list->setDataUrl(['action' => 'list-data']);
 
         return $list;
+    }
+    
+    public function listDataAction()
+    {
+    	$list = $this->_getDomainsList();
+    	
+    	// Json data from pm_View_List_Simple
+    	$this->_helper->json($list->fetchData());
     }
     
     private function _getTemplatesUrl() {
