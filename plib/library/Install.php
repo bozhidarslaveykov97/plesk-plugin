@@ -7,7 +7,7 @@ class Modules_Microweber_Install {
     protected $_domainId;
     protected $_type = 'default';
     protected $_databaseDriver = 'mysql';
-    protected $_email = 'encrypt@microweber.com';
+    protected $_email = 'admin@microweber.com';
     protected $_username = '';
     protected $_password = '';
     protected $_path = false;
@@ -139,7 +139,7 @@ class Modules_Microweber_Install {
         pm_Log::debug('Clear old folder on domain: ' . $domain->getName());
         
         // Clear domain files if exists
-        $this->_prepairDomainFolder($fileManager, $domainDocumentRoot);
+        $this->_prepairDomainFolder($fileManager, $domainDocumentRoot, $domain->getHomePath());
         
         $this->setProgress(60);
        	
@@ -265,7 +265,7 @@ class Modules_Microweber_Install {
     	}
     }
     
-    private function _prepairDomainFolder($fileManager, $installPath)
+    private function _prepairDomainFolder($fileManager, $installPath, $backupPath)
     {
     	try {
     		$findedFiles = [];
@@ -278,12 +278,12 @@ class Modules_Microweber_Install {
     		
     		if (!empty($findedFiles)) {
     			// Make backup dir
-    			$backupDir = $installPath . '/backup-files-' . date('Y-m-d-H-i-s');
-    			$fileManager->mkdir($backupDir);
+    			$backupFilesPath = $backupPath . '/backup-files-' . date('Y-m-d-H-i-s');
+    			$fileManager->mkdir($backupFilesPath);
     			
     			// Move files to backup dir
     			foreach ($findedFiles as $file) {
-    				$fileManager->moveFile($installPath . '/' . $file, $backupDir . '/' . $file);
+    				$fileManager->moveFile($installPath . '/' . $file, $backupFilesPath . '/' . $file);
     			}
     		}
     		
