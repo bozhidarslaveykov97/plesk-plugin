@@ -221,6 +221,8 @@ class Modules_Microweber_Install {
         $installArguments[] = $dbUsername;
         $installArguments[] = $dbPassword;
         $installArguments[] = $this->_databaseDriver;
+		$installArguments = array_map('escapeshellarg', $installArguments);
+		
         $installArguments[] = '-p mw_';
         $installArguments[] = '-t ' . $whmcsConnector->getSelectedTemplate();
         $installArguments[] = '-d 1';
@@ -229,14 +231,18 @@ class Modules_Microweber_Install {
        		$installArguments[] = '-c 1';
         }
 		
-        $installArguments = array_map('escapeshellarg', $installArguments);
         $installArguments = implode(' ', $installArguments);
 		
         $command = $domainDocumentRoot . '/artisan microweber:install ' . $installArguments;
 		
-        try {
-        	$artisan = pm_ApiCli::callSbin('run_php.sh', [$domain->getSysUserLogin(), $command]);  
-        	
+		$artisan = pm_ApiCli::callSbin('run_php.sh', [$domain->getSysUserLogin(), $command]);  
+			
+		var_dump($command);
+		var_dump($artisan);
+		die();
+		
+		
+        try { 
         	$this->setProgress(95);
  
         	pm_Log::debug('Microweber install log for: ' . $domain->getName() . '<br />' . $artisan['stdout']. '<br /><br />');
