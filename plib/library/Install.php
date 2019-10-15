@@ -228,7 +228,8 @@ class Modules_Microweber_Install {
         if (!pm_Session::getClient()->isAdmin()) {
        		$installArguments[] = '-c 1';
         }
-        
+		
+        $installArguments = array_map('escapeshellarg', $installArguments);
         $installArguments = implode(' ', $installArguments);
 		
         $command = $domainDocumentRoot . '/artisan microweber:install ' . $installArguments;
