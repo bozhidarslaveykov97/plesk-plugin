@@ -505,7 +505,7 @@ class IndexController extends pm_Controller_Action {
 
         if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
 			
-        	$success = true;
+            $success = true;
         	
             // Form proccessing
             pm_Settings::set('installation_settings', $form->getValue('installation_settings'));
@@ -523,6 +523,8 @@ class IndexController extends pm_Controller_Action {
             	$this->_status->addMessage('error', 'Can\'t get latest version from selected download url.');
             	$success = false;
             }
+		
+	    Modules_Microweber_WhmcsConnector::updateWhmcsConnector();
             
             if ($success) {
             	$this->_status->addMessage('info', 'Settings was successfully saved.');
